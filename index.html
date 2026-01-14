@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spectrum Agent 111</title>
+    <style>
+        :root {
+            --sys-gray: #f0f0f0;
+            --sys-border: #a0a0a0;
+            --sys-dark: #404040;
+            --win-teal: #008080;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-mono: 'Courier New', Courier, monospace;
+        }
+
+        * { box-sizing: border-box; user-select: none; }
+        body {
+            margin: 0;
+            background-color: var(--sys-gray);
+            font-family: var(--font-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            font-size: 13px;
+        }
+
+        .flex { display: flex; }
+        .col { flex-direction: column; }
+        .grow { flex: 1; }
+        .bold { font-weight: bold; }
+        .red-text { color: red; }
+        .bg-teal { background-color: var(--win-teal); color: white; }
+
+        .app-window {
+            display: grid;
+            grid-template-columns: 1fr 60px;
+            grid-template-rows: auto auto 1fr auto auto;
+            height: 100%;
+            border: 1px solid #888;
+        }
+
+        .header-strip {
+            background: linear-gradient(to bottom, #f9f9f9, #e0e0e0);
+            padding: 4px 8px;
+            border-bottom: 1px solid #ccc;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .status-bar {
+            display: flex;
+            background: #e6e6e6;
+            border-bottom: 1px solid #999;
+            padding: 2px;
+        }
+        .status-tab {
+            border: 1px solid #888;
+            background: white;
+            padding: 2px 8px;
+            margin-right: 4px;
+            color: blue;
+            font-weight: bold;
+            box-shadow: inset 1px 1px 2px #ccc;
+        }
+        .status-tab.active { background: blue; color: white; }
+        .status-tab.info { background: #e0e0f0; color: blue; width: 300px; text-align: center; }
+
+        .workspace {
+            display: grid;
+            grid-template-rows: 40% 60%;
+        }
+
+        .script-pane {
+            background: white;
+            border: 1px solid #999;
+            margin: 2px;
+            padding: 8px;
+            font-family: var(--font-mono);
+            overflow-y: auto;
+        }
+
+        .highlight-green { background: green; color: white; font-weight: bold; padding: 0 4px; }
+        .highlight-red { background: #a00; color: white; font-weight: bold; padding: 0 4px; }
+
+        .split-pane {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 4px;
+            margin: 0 2px 2px 2px;
+        }
+        .left-log { background: #fdfdfd; border: 2px solid #ccc; border-style: inset; }
+        .right-form {
+            border: 2px solid #ccc; border-style: inset;
+            display: flex; flex-direction: column;
+        }
+
+        .info-strip {
+            background: linear-gradient(#e0e0e0, #c0c0c0);
+            text-align: center;
+            font-size: 11px;
+            padding: 2px;
+            border-bottom: 1px solid #999;
+        }
+        .form-body { padding: 10px; overflow-y: auto; flex: 1; }
+        .form-row { display: flex; align-items: center; margin-bottom: 8px; gap: 8px; }
+        .lbl-blue-bg {
+            background: blue; color: white;
+            font-weight: bold; padding: 2px 6px;
+            min-width: 100px;
+        }
+        select, input[type="text"], input[type="email"], input[type="tel"] {
+            flex: 1; max-width: 250px;
+            background: #ffffd0; border: 1px solid #888; padding: 2px 4px;
+        }
+        .form-btn {
+            background: linear-gradient(#fff, #ddd);
+            border: 1px solid #888;
+            padding: 4px 12px;
+            cursor: pointer;
+        }
+        .form-btn:active { transform: translateY(1px); }
+
+        .sidebar {
+            background: #e8e8e8;
+            padding: 2px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            border-left: 1px solid #999;
+            grid-row: 1 / -1;
+            grid-column: 2;
+        }
+        .side-btn {
+            background: linear-gradient(to bottom, #fff, #dcdcdc 50%, #d0d0d0 51%, #e0e0e0);
+            border: 1px solid #707070;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 10px;
+            padding: 4px 0;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .side-btn:active { transform: translateY(1px); }
+        .side-btn.yellow { background: linear-gradient(to bottom, #ffffd0, #e0e080); }
+        .side-btn.pink { background: linear-gradient(to bottom, #fce0e0, #e0b0b0); }
+        .side-btn.active { background: #4a90d9; color: white; }
+
+        .footer {
+            height: 60px;
+            background: #f0f0f0;
+            border-top: 1px solid #999;
+            display: flex;
+            gap: 10px;
+            padding: 5px;
+            align-items: flex-end;
+        }
+        .footer-mod {
+            height: 30px; width: 50px;
+            background: linear-gradient(to bottom, #555, #222);
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            border: 1px solid white;
+        }
+
+        /* Bottom Bar */
+        .bottom-bar {
+            height: 22px;
+            background: linear-gradient(#d0d0d0, #b0b0b0);
+            border-top: 1px solid #888;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            font-size: 11px;
+            gap: 20px;
+        }
+        .bottom-bar-section {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .bottom-bar-input {
+            background: #ffffd0;
+            border: 1px solid #666;
+            padding: 1px 4px;
+            font-family: var(--font-mono);
+            width: 120px;
+        }
+
+        /* Account Menu Overlay */
+        .account-menu {
+            position: fixed;
+            right: 70px;
+            top: 80px;
+            background: #f0f0f0;
+            border: 2px outset #ccc;
+            display: none;
+            flex-direction: column;
+            min-width: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 3px 3px 8px rgba(0,0,0,0.3);
+        }
+        .account-menu.visible { display: flex; }
+        .account-tab {
+            padding: 6px 12px;
+            border-bottom: 1px solid #ccc;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .account-tab:hover { background: #0078d7; color: white; }
+        .account-tab.active { background: #005a9e; color: white; }
+
+        /* SIC: Sequential Input Control */
+        .seq-locked {
+            pointer-events: none; /* Disables clicking */
+            background-color: #e8e8e8 !important; /* Visual cue for locked state */
+            color: #888;
+        }
+
+        /* Lock Mode */
+        body.locked .workspace,
+        body.locked .sidebar,
+        body.locked .footer { opacity: 0.6; pointer-events: none; }
+        body.locked .bottom-bar { opacity: 1; pointer-events: auto; }
+        body.locked .bottom-bar-input { background: #ffff80; }
+
+        /* No Account State */
+        .no-account-msg {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script>
+    /**
+     * AXIOMATIC CORE - Extended
+     */
+    class Component {
+        constructor(tag = 'div', className = '') {
+            this.el = document.createElement(tag);
+            if (className) this.el.className = className;
+        }
+        css(styles) { Object.assign(this.el.style, styles); return this; }
+        text(str) { this.el.innerText = str; return this; }
+        html(str) { this.el.innerHTML = str; return this; }
+        attr(k, v) { this.el.setAttribute(k, v); return this; }
+        child(c) { this.el.appendChild(c instanceof Component ? c.el : c); return this; }
+        clear() { this.el.innerHTML = ''; return this; }
+        on(evt, fn) { this.el.addEventListener(evt, fn); return this; }
+        toggle(cls, force) { this.el.classList.toggle(cls, force); return this; }
+        mount(p) { (typeof p === 'string' ? document.querySelector(p) : p).appendChild(this.el); return this; }
+    }
+
+    /**
+     * REACTIVE STATE
+     */
+    const State = {
+        _data: { account: null, mode: 'normal', input: '' },
+        _subs: new Set(),
+        get(k) { return this._data[k]; },
+        set(k, v) { 
+            this._data[k] = v; 
+            if (k === 'mode') document.body.classList.toggle('locked', v === 'display');
+            this._subs.forEach(fn => fn(k, v)); 
+        },
+        sub(fn) { this._subs.add(fn); return () => this._subs.delete(fn); }
+    };
+
+    /**
+     * ACCOUNT REGISTRY - Accounts register themselves here
+     */
+    const Accounts = {
+        list: {},
+        register(id, config) { 
+            this.list[id] = { id, ...config }; 
+        },
+        get(id) { return this.list[id]; },
+        all() { return Object.values(this.list); },
+        find(query) {
+            const q = query.toLowerCase();
+            return this.all().filter(a => 
+                a.id.includes(q) || a.name.toLowerCase().includes(q)
+            );
+        }
+    };
+
+    /**
+     * FORM BUILDER - Creates form from config
+     */
+    const FormBuilder = {
+        build(fields, account) {
+            const form = new Component('div', 'form-body');
+            (fields || []).forEach(f => {
+                const row = new Component('div', 'form-row');
+                if (f.label) row.child(new Component('span', 'lbl-blue-bg').text(f.label));
+                
+                const ctrl = this.createControl(f, account);
+                if (ctrl) row.child(ctrl);
+                form.child(row);
+            });
+            return form;
+        },
+        createControl(f, account) {
+            switch(f.type) {
+                case 'select':
+                    const sel = new Component('select');
+                    sel.child(new Component('option').text(''));
+                    (f.options || []).forEach(o => sel.child(new Component('option').text(o)));
+                    return sel;
+                case 'text': case 'email': case 'tel':
+                    return new Component('input').attr('type', f.type).attr('placeholder', f.placeholder || '');
+                case 'button':
+                    return new Component('button', 'form-btn').text(f.text)
+                        .on('click', () => f.action?.(account));
+                case 'label':
+                    return new Component('span').text(f.value || '');
+                default:
+                    return new Component('input').attr('type', 'text');
+            }
+        },
+        enforceSequentialFlow(root) {
+            const inputs = Array.from(root.el.querySelectorAll('input, select, button'));
+            if (!inputs.length) return;
+
+            let insertMode = false;
+
+            inputs.forEach((inp, i) => {
+                if (i > 0) inp.classList.add('seq-locked');
+            });
+
+            setTimeout(() => { 
+                inputs[0].focus(); 
+                if (inputs[0].tagName === 'INPUT') inputs[0].select(); 
+            }, 0);
+
+            root.on('keydown', e => {
+                const current = e.target;
+                const idx = inputs.indexOf(current);
+                if (idx === -1) return;
+
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    const dir = e.shiftKey ? -1 : 1;
+                    const nextIdx = idx + dir;
+
+                    if (nextIdx >= 0 && nextIdx < inputs.length) {
+                        const next = inputs[nextIdx];
+                        insertMode = false; // Reset on navigation
+                        current.classList.add('seq-locked');
+                        next.classList.remove('seq-locked');
+                        next.focus();
+                        if (next.tagName === 'INPUT') next.select();
+                    }
+                }
+
+                if (e.key === 'Insert') {
+                    e.preventDefault();
+                    insertMode = !insertMode;
+                    if (!insertMode && current.tagName === 'INPUT') {
+                        current.select();
+                    } else if (insertMode && current.tagName === 'INPUT') {
+                        current.selectionStart = current.selectionEnd = current.value.length;
+                    }
+                }
+            });
+
+            // Block mouse-driven cursor placement
+            const blockSelection = (e) => {
+                if (!insertMode && e.target.tagName === 'INPUT') {
+                    e.preventDefault();
+                    e.target.select();
+                }
+            };
+
+            root.on('mousedown', blockSelection);
+            root.on('mouseup', blockSelection);
+            root.on('click', blockSelection);
+            
+            root.on('focusin', e => {
+                if (!insertMode && e.target.tagName === 'INPUT') {
+                    e.target.select();
+                }
+            });
+
+            // Prevent arrow keys/home/end unless in insert mode
+            root.on('keydown', e => {
+                if (!insertMode && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {
+                    if (e.target.tagName === 'INPUT') e.preventDefault();
+                }
+            }, true);
+        }
+    };
+
+    /**
+     * UI COMPONENTS
+     */
+    class Sidebar extends Component {
+        constructor(app) {
+            super('div', 'sidebar');
+            this.app = app;
+            this.render();
+        }
+        render() {
+            const buttons = [
+                'System', 'Queues', 'Accounts', 'Subs', 'Contacts',
+                'History', 'Browser', 'Undelivr', 'Loc/IF', 'Remind',
+                'Alert', 'Start', 'Stop', 'Dial', 'Park',
+                'Patch', 'Hold', 'PriHold', 'Transfer', 'Clear',
+                'Stats', 'On/Off'
+            ];
+            buttons.forEach(lbl => {
+                const btn = new Component('div', 'side-btn').text(lbl);
+                if (['Hold', 'PriHold', 'Transfer', 'Clear'].includes(lbl)) btn.el.classList.add('yellow');
+                if (['Park', 'Patch'].includes(lbl)) btn.el.classList.add('pink');
+                if (lbl === 'Accounts') btn.on('click', () => this.app.toggleAccountMenu());
+                this.child(btn);
+            });
+            this.child(new Component('div', 'side-btn').css({background:'black',color:'#0f0',marginTop:'auto'}).text('PAGE'));
+        }
+    }
+
+    class Header extends Component {
+        constructor() {
+            super('div', 'col');
+            this.topStrip = new Component('div', 'header-strip flex');
+            this.accountLabel = new Component('span', 'red-text').text('NO ACCOUNT SELECTED');
+            this.timeLabel = new Component('span', 'red-text').text(this.getTime());
+            this.topStrip.child(this.accountLabel).child(this.timeLabel);
+
+            this.statusBar = new Component('div', 'status-bar');
+            this.infoTab = new Component('div', 'status-tab info').text('Select an account');
+            
+            [{ t: 'No Undelivered' }, { t: '0 Delivered' }, { t: '0 In Progress', c: 'active' }]
+                .forEach(item => this.statusBar.child(new Component('div', `status-tab ${item.c||''}`).text(item.t)));
+            this.statusBar.child(this.infoTab);
+
+            this.child(this.topStrip).child(this.statusBar);
+            State.sub((k) => k === 'account' && this.update());
+            setInterval(() => this.timeLabel.text(this.getTime()), 1000);
+        }
+        getTime() {
+            const d = new Date();
+            const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            return `${days[d.getDay()]} ${d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}).toLowerCase()} Eastern`;
+        }
+        update() {
+            const acc = Accounts.get(State.get('account'));
+            this.accountLabel.text(acc ? acc.name.toUpperCase() : 'NO ACCOUNT SELECTED');
+            this.infoTab.text(acc ? `${acc.id} | ${acc.name}` : 'Select an account');
+        }
+    }
+
+    class ScriptPanel extends Component {
+        constructor() {
+            super('div', 'script-pane');
+            this.html('<div class="no-account-msg">Select an account to view script</div>');
+            State.sub((k) => k === 'account' && this.update());
+        }
+        update() {
+            const acc = Accounts.get(State.get('account'));
+            this.html(acc?.script || '<div class="no-account-msg">No script available</div>');
+        }
+    }
+
+    class ActionPanel extends Component {
+        constructor() {
+            super('div', 'right-form bg-teal');
+            this.infoStrip = new Component('div', 'info-strip').text('No account selected');
+            this.formContainer = new Component('div', 'form-body')
+                .child(new Component('div', 'no-account-msg').text('Select an account'));
+            this.child(this.infoStrip).child(this.formContainer);
+            State.sub((k) => k === 'account' && this.update());
+        }
+        update() {
+            const acc = Accounts.get(State.get('account'));
+            this.infoStrip.text(acc?.info || 'No instructions');
+            this.formContainer.clear();
+            if (acc?.fields) {
+                const form = FormBuilder.build(acc.fields, acc);
+                
+                // Apply the sequential logic to the newly built form
+                FormBuilder.enforceSequentialFlow(form);
+                
+                this.formContainer.el.appendChild(form.el);
+            } else {
+                this.formContainer.child(new Component('div','no-account-msg').text('No form configured'));
+            }
+        }
+    }
+
+    class AccountMenu extends Component {
+        constructor() {
+            super('div', 'account-menu');
+            State.sub(() => this.render());
+        }
+        render() {
+            this.clear();
+            Accounts.all().forEach(acc => {
+                this.child(new Component('div', `account-tab${State.get('account')===acc.id?' active':''}`)
+                    .text(`${acc.id} - ${acc.name}`)
+                    .on('click', () => {
+                        State.set('account', acc.id);
+                        this.hide();
+                    }));
+            });
+        }
+        show() { this.el.classList.add('visible'); this.render(); }
+        hide() { this.el.classList.remove('visible'); }
+        toggle() { this.el.classList.toggle('visible'); if(this.el.classList.contains('visible')) this.render(); }
+    }
+
+    class BottomBar extends Component {
+        constructor() {
+            super('div', 'bottom-bar');
+            this.modeLabel = new Component('span').text('Ready');
+            this.inputField = new Component('input', 'bottom-bar-input')
+                .attr('type', 'text')
+                .attr('placeholder', 'Account #')
+                .attr('readonly', 'true');
+            
+            this.child(new Component('div', 'bottom-bar-section').child(this.modeLabel))
+                .child(new Component('div', 'bottom-bar-section').child(this.inputField));
+            
+            State.sub(() => this.update());
+        }
+        update() {
+            const mode = State.get('mode');
+            const acc = Accounts.get(State.get('account'));
+            if (mode === 'display') {
+                this.modeLabel.text('Display:');
+                this.inputField.el.value = State.get('input');
+                this.inputField.el.removeAttribute('readonly');
+                this.inputField.el.focus();
+            } else {
+                this.modeLabel.text(acc ? 'Account:' : 'Ready');
+                this.inputField.el.value = acc ? `${acc.id} - ${acc.name}` : '';
+                this.inputField.attr('readonly', 'true');
+            }
+        }
+    }
+
+    class Footer extends Component {
+        constructor() {
+            super('div', 'footer');
+            for(let i = 0; i < 4; i++) this.child(new Component('div', 'footer-mod'));
+            this.child(new Component('div').css({width:'20px'}));
+            for(let i = 0; i < 2; i++) this.child(new Component('div', 'footer-mod'));
+        }
+    }
+
+    /**
+     * APP - Main Controller
+     */
+    class App {
+        static instance;
+        
+        static init() {
+            App.instance = new App();
+            App.instance.build();
+            App.instance.bindKeys();
+        }
+
+        build() {
+            const root = document.getElementById('root');
+            const main = new Component('div', 'app-window');
+            const content = new Component('div', 'col grow');
+
+            content.child(new Header());
+            
+            const workspace = new Component('div', 'workspace grow');
+            workspace.child(new ScriptPanel());
+            
+            const split = new Component('div', 'split-pane grow');
+            split.child(new Component('div', 'left-log'));
+            split.child(new ActionPanel());
+            workspace.child(split);
+            content.child(workspace);
+            
+            content.child(new Footer());
+            content.child(new BottomBar());
+
+            this.accountMenu = new AccountMenu();
+            
+            main.child(content).child(new Sidebar(this)).mount(root);
+            this.accountMenu.mount(document.body);
+        }
+
+        toggleAccountMenu() { this.accountMenu.toggle(); }
+
+        bindKeys() {
+            document.addEventListener('keydown', e => {
+                const mode = State.get('mode');
+                
+                // + key enters display mode (numpad or shift+=)
+                if ((e.key === '+' || (e.key === '=' && e.shiftKey)) && mode === 'normal') {
+                    e.preventDefault();
+                    State.set('input', '');
+                    State.set('mode', 'display');
+                    return;
+                }
+                
+                // Grave/Tilde exits display mode
+                if (e.key === '`' || e.key === '~' || (e.key === 'Escape' && mode === 'display')) {
+                    State.set('mode', 'normal');
+                    return;
+                }
+
+                // In display mode, capture number input
+                if (mode === 'display') {
+                    if (/^[0-9.]$/.test(e.key)) {
+                        State.set('input', State.get('input') + e.key);
+                    } else if (e.key === 'Backspace') {
+                        State.set('input', State.get('input').slice(0, -1));
+                    } else if (e.key === 'Enter') {
+                        const input = State.get('input');
+                        const acc = Accounts.get(input) || Accounts.find(input)[0];
+                        if (acc) State.set('account', acc.id);
+                        State.set('mode', 'normal');
+                    }
+                    e.preventDefault();
+                }
+            });
+        }
+    }
+
+    // ========================================
+    // ACCOUNT DEFINITIONS (Separate files in production)
+    // ========================================
+
+    // Account: 2000 - Training Account
+    Accounts.register('2000', {
+        name: 'Training Account 6-7',
+        info: 'Instructions cleared on 13-JAN-26 04:38 PM NPC',
+        script: `
+            <span class="highlight-green">Scheduling call handling</span>
+            <span class="highlight-red" style="margin-left: 50px;">We make appts</span>
+            <br><br>
+            <span style="color: teal; font-weight: bold;">• Scheduling link</span>
+            <br><br>
+            1. Ask if they want East or West. If East, ask if they want Willoughby or Beachwood. If West, choose Brookpark.<br><br>
+            2. Complete web form and message to include patient and appt details
+            <div style="margin-top: 10px;">
+                <span class="highlight-red">Must have email to schedule appt</span>
+                if refused, enter refused@yahoo.com.
+                <span style="float:right; font-weight:bold;">DONT REFUSE</span>
+            </div>
+        `,
+        fields: [
+            { type: 'select', label: 'Type of call:', options: ['New Patient', 'Existing Patient', 'Reschedule', 'Cancel'] },
+            { type: 'select', label: 'Location:', options: ['East - Willoughby', 'East - Beachwood', 'West - Brookpark'] },
+            { type: 'text', label: 'Patient Name:' },
+            { type: 'email', label: 'Email:' },
+            { type: 'tel', label: 'Phone:' },
+            { type: 'button', text: 'Submit Appointment', action: (acc) => alert(`Submitted for ${acc.name}`) }
+        ]
+    });
+
+    // Account: 3000 - Customer Service
+    Accounts.register('3000', {
+        name: 'Acme Customer Service',
+        info: 'Updated 01-FEB-26 - New return policy',
+        script: `
+            <span class="highlight-green">Customer Service Protocol</span>
+            <br><br>
+            <b>Greeting:</b> "Thank you for calling Acme, how may I help you?"
+            <br><br>
+            <span style="color: teal; font-weight: bold;">• Order Status</span> - Get order # and lookup<br>
+            <span style="color: teal; font-weight: bold;">• Returns</span> - 30 day policy, must have receipt<br>
+            <span style="color: teal; font-weight: bold;">• Complaints</span> - Escalate to supervisor
+        `,
+        fields: [
+            { type: 'select', label: 'Call Type:', options: ['Order Status', 'Returns', 'Complaint', 'General Inquiry'] },
+            { type: 'text', label: 'Order #:' },
+            { type: 'text', label: 'Customer Name:' },
+            { type: 'button', text: 'Lookup Order', action: () => alert('Looking up order...') },
+            { type: 'button', text: 'Escalate', action: () => alert('Escalating to supervisor...') }
+        ]
+    });
+
+    // Account: 5500 - Tech Support
+    Accounts.register('5500', {
+        name: 'TechCorp Support Line',
+        info: 'Priority support - VIP clients',
+        script: `
+            <span class="highlight-green">Technical Support</span>
+            <span class="highlight-red" style="margin-left: 30px;">VIP ACCOUNT</span>
+            <br><br>
+            <b>Step 1:</b> Verify customer identity (last 4 SSN + DOB)<br>
+            <b>Step 2:</b> Document issue in detail<br>
+            <b>Step 3:</b> Attempt basic troubleshooting<br>
+            <b>Step 4:</b> If unresolved, create ticket and escalate
+            <br><br>
+            <span class="highlight-red">DO NOT PROMISE RESOLUTION TIME</span>
+        `,
+        fields: [
+            { type: 'text', label: 'Customer ID:' },
+            { type: 'select', label: 'Issue Type:', options: ['Software', 'Hardware', 'Network', 'Account'] },
+            { type: 'select', label: 'Severity:', options: ['Low', 'Medium', 'High', 'Critical'] },
+            { type: 'text', label: 'Description:' },
+            { type: 'button', text: 'Create Ticket', action: () => alert('Ticket created!') }
+        ]
+    });
+
+    // Boot
+    App.init();
+    </script>
+</body>
+</html>
