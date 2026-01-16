@@ -4,88 +4,97 @@
 <meta charset="UTF-8">
 <title>Spectrum Fake</title>
 <style>
-  :root {
-    --bg: #008080; --gray: #c0c0c0; --dark: #808080; --light: #ffffff;
-    --navy: #000080; --black: #000000; --green: #00ff00; --red: #ff0000;
-    --font: 'MS Sans Serif', Tahoma, sans-serif;
-  }
-  * { box-sizing: border-box; user-select: none; }
-  body { margin: 0; background: var(--bg); height: 100vh; font-family: var(--font); font-size: 11px; overflow: hidden; }
-  
-  /* Layout */
-  .app { display: grid; grid-template-areas: "h h" "m s" "d d"; grid-template-rows: auto 1fr auto; grid-template-columns: 1fr 90px; height: 100%; padding: 2px; background: var(--gray); }
-  .win-out { border: 2px solid; border-color: var(--light) var(--dark) var(--dark) var(--light); }
-  .win-in { border: 2px solid; border-color: var(--dark) var(--light) var(--light) var(--dark); background: var(--light); }
-  
-  /* Header */
-  #header { grid-area: h; display: flex; gap: 8px; padding: 4px; background: var(--navy); color: var(--light); align-items: center; margin-bottom: 2px; }
-  #acct-name { color: var(--red); font-weight: bold; min-width: 250px; }
-  #clock { background: var(--black); color: var(--green); padding: 2px 6px; font-family: monospace; border: 1px inset; }
-  .tab { background: var(--gray); color: var(--black); padding: 2px 8px; border: 2px outset var(--light); }
-  
-  /* Main Area */
-  #main { grid-area: m; display: grid; grid-template-rows: 2fr auto 3fr 2fr 2fr; gap: 4px; padding-right: 4px; overflow: hidden; }
-  section { background: var(--light); overflow: auto; position: relative; }
-  section.dim { pointer-events: none; opacity: 0.7; background: #ddd; }
+:root {
+  --bg:#008080;--gray:#c0c0c0;--dark:#808080;--light:#fff;--navy:#000080;
+  --black:#000;--green:#0f0;--red:#f00;--yellow:#ff0;--font:'MS Sans Serif',Tahoma,sans-serif;
+}
+*{box-sizing:border-box;user-select:none}
+body{margin:0;background:var(--bg);height:100vh;font-family:var(--font);font-size:11px;overflow:hidden}
+.app{display:grid;grid-template-areas:"h h""m s""d d";grid-template-rows:auto 1fr 24px;grid-template-columns:1fr 90px;height:100%;padding:2px;background:var(--gray)}
+.win-out{border:2px solid;border-color:var(--light) var(--dark) var(--dark) var(--light)}
+.win-in{border:2px solid;border-color:var(--dark) var(--light) var(--light) var(--dark);background:var(--light)}
 
-  /* Script */
-  #script { font-family: monospace; padding: 5px; white-space: pre-wrap; }
-  .sc-good { color: green; font-weight: bold; }
-  .sc-warn { color: red; font-weight: bold; }
-  
-  /* Disclaimer */
-  #disclaimer { background: #ffffc0; padding: 4px; height: 40px; display: flex; align-items: center; font-weight: bold; }
+#header{grid-area:h;display:flex;gap:8px;padding:4px;background:var(--navy);color:var(--light);align-items:center;margin-bottom:2px}
+#acct-name{color:var(--gray);font-weight:bold;min-width:200px}
+#acct-name.active{color:var(--red)}
+#clock{background:var(--black);color:var(--green);padding:2px 6px;font-family:monospace;border:1px inset}
+.tab{background:var(--gray);color:var(--black);padding:2px 8px;border:2px outset var(--light);font-size:10px}
+#acct-id{margin-left:auto}
 
-  /* Form */
-  #form { padding: 8px; background: var(--gray); }
-  .form-hint { color: var(--navy); font-weight: bold; margin-bottom: 5px; }
-  .step { display: none; }
-  .step.active { display: block; }
-  .field { margin-bottom: 4px; }
-  .label { font-weight: bold; display: block; }
-  input, select, textarea { width: 100%; border: 2px inset; font-family: var(--font); font-size: 11px; padding: 2px; background: var(--light); }
-  .field.locked input, .field.locked select, .field.locked textarea { background: var(--gray); color: #555; pointer-events: none; }
-  .field.active input, .field.active select, .field.active textarea { background: #ffffc0; }
-  .submit-bar { margin-top: 10px; background: var(--gray); border: 2px inset; padding: 5px; text-align: center; font-weight: bold; color: var(--dark); display: none; }
-  
-  /* Dropdown Custom */
-  .dd-wrap { position: relative; }
-  .dd-disp { border: 2px inset; background: var(--light); padding: 2px; cursor: pointer; display: flex; justify-content: space-between; }
-  .dd-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--light); border: 2px solid var(--black); z-index: 100; max-height: 100px; overflow-y: auto; display: none; }
-  .dd-opt { padding: 2px; cursor: pointer; }
-  .dd-opt:hover, .dd-opt.sel { background: var(--navy); color: var(--light); }
+#main{grid-area:m;display:grid;grid-template-rows:1fr 2fr;gap:3px;padding-right:3px;overflow:hidden}
+#main.dim section{pointer-events:none;opacity:.6;filter:brightness(.9)}
+section{background:var(--light);overflow:auto;position:relative;min-height:0}
 
-  /* Oncall */
-  .oc-row { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #eee; padding: 2px; cursor: pointer; }
-  .oc-row.sel { background: var(--navy); color: var(--light); }
-  .oc-sub { grid-column: 1 / -1; font-size: 0.85em; color: var(--dark); padding-left: 4px; }
-  .oc-row.sel .oc-sub { color: #ccc; }
+#bottom-area{display:grid;grid-template-columns:1fr 1fr;gap:3px;min-height:0}
+#left-col,#right-col{display:flex;flex-direction:column;gap:3px;min-height:0;overflow:hidden}
+#left-col>section,#right-col>section{flex:1;min-height:0}
+#disclaimer,#disclaimer-oncall{flex:0 0 32px!important;min-height:32px;max-height:32px}
 
-  /* Info */
-  #info { padding: 4px; display: flex; flex-direction: column; }
-  #info-content { flex: 1; white-space: pre-wrap; overflow: hidden; }
-  #info-pg { text-align: right; color: var(--dark); font-size: 0.8em; margin-top: 2px; }
+#script{font-family:monospace;padding:5px;white-space:pre-wrap;font-size:12px}
+#script .placeholder{color:#888;font-style:italic}
+.sc-good{color:green;font-weight:bold}
+.sc-warn{color:red;font-weight:bold}
 
-  /* Sidebar */
-  #sidebar { grid-area: s; display: grid; grid-template-rows: repeat(22, 1fr); gap: 2px; background: var(--gray); }
-  .btn { border: 2px outset var(--light); background: var(--gray); font-size: 9px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  .btn:active { border-style: inset; }
-  .btn.yel { background: #ffff00; } .btn.pnk { background: #ffccff; } .btn.blk { background: #000; color: #0f0; font-family: monospace; }
+#disclaimer,#disclaimer-oncall{background:#ffffc0;padding:4px 8px;display:flex;align-items:center;font-weight:bold;overflow:hidden}
+#disclaimer-oncall{font-size:10px}
 
-  /* Bottom Bar */
-  #dbar { grid-area: d; background: var(--gray); border-top: 2px outset var(--light); padding: 2px; display: flex; align-items: center; }
-  #dbar.input-mode { background: #ffff00; }
-  #dbar-in { width: 100%; background: var(--light); border: 2px inset; font-family: monospace; display: none; }
-  #dbar.input-mode #dbar-in { display: block; }
+#form{padding:6px;background:var(--gray);overflow-y:auto}
+.form-hint{color:var(--navy);font-weight:bold;margin-bottom:4px;font-size:10px}
+.step{display:none}.step.active{display:block}
+.field{margin-bottom:4px}
+.field .lbl{font-weight:bold;display:block;margin-bottom:1px}
+.field input,.field select,.field textarea{width:100%;border:2px inset;font-family:var(--font);font-size:11px;padding:2px;background:var(--light)}
+.field.locked input,.field.locked select,.field.locked textarea,.field.locked .dd-disp{background:#ddd!important;color:#666;pointer-events:none}
+.field.active input,.field.active select,.field.active textarea,.field.active .dd-disp{background:#ffffc0!important;outline:2px solid var(--navy)}
+#form .submit-bar{margin-top:8px;background:var(--gray);border:2px inset;padding:6px;text-align:center;font-weight:bold;display:none}
+#form .submit-bar.show{display:flex}
 
-  /* Popups */
-  #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; align-items: center; justify-content: center; }
-  .popup { background: var(--gray); border: 2px outset var(--light); width: 350px; display: flex; flex-direction: column; box-shadow: 4px 4px 0 rgba(0,0,0,0.5); }
-  .pop-h { background: var(--navy); color: var(--light); padding: 4px; font-weight: bold; display: flex; justify-content: space-between; }
-  .pop-b { padding: 8px; max-height: 400px; overflow-y: auto; }
-  .pop-item { padding: 4px; border-bottom: 1px dotted var(--dark); cursor: pointer; }
-  .pop-item:hover, .pop-item.sel { background: var(--navy); color: var(--light); }
-  .pop-act { display: flex; gap: 5px; padding: 4px; justify-content: center; border-top: 2px groove var(--light); }
+.dd-wrap{position:relative}
+.dd-disp{border:2px inset;background:var(--light);padding:2px 4px;cursor:pointer;display:flex;justify-content:space-between}
+.dd-list{position:absolute;top:100%;left:0;right:0;background:var(--light);border:2px solid var(--black);z-index:100;max-height:100px;overflow-y:auto;display:none}
+.dd-list.open{display:block}
+.dd-opt{padding:2px 4px;cursor:pointer}
+.dd-opt:hover,.dd-opt.sel{background:var(--navy);color:var(--light)}
+
+#oncall{padding:0;display:flex;flex-direction:column}
+#oc-header{background:var(--gray);border-bottom:2px outset var(--light);padding:2px 4px;display:flex;justify-content:flex-end;gap:2px}
+#oc-list{flex:1;overflow-y:auto}
+.oc-row{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #ddd;padding:3px 5px;cursor:pointer}
+.oc-row:hover{background:#e8e8e8}
+.oc-row.sel{background:var(--navy);color:var(--light)}
+.oc-sub{grid-column:1/-1;font-size:10px;color:var(--dark)}
+.oc-row.sel .oc-sub{color:#aaa}
+
+#sidebar{grid-area:s;display:grid;grid-template-rows:repeat(22,1fr);gap:2px;background:var(--gray);padding:2px}
+.btn{border:2px outset var(--light);background:var(--gray);font-size:9px;font-weight:bold;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.btn:active{border-style:inset}
+.btn.yel{background:#ff0}.btn.pnk{background:#fcf}.btn.red{background:#f66}.btn.blk{background:#000;color:#0f0;font-family:monospace}
+
+#dbar{grid-area:d;background:var(--gray);border-top:2px outset var(--light);padding:2px 4px;display:flex;align-items:center}
+#dbar.input{background:var(--yellow)}
+#dbar-in{flex:1;background:var(--light);border:2px inset;font-family:monospace;padding:2px;display:none}
+#dbar.input #dbar-in{display:block}
+#dbar-status{font-size:10px;color:var(--dark)}
+
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;display:none;align-items:center;justify-content:center}
+#overlay.show{display:flex}
+.popup{background:var(--gray);border:2px outset var(--light);min-width:320px;max-width:400px;box-shadow:4px 4px 0 rgba(0,0,0,.5)}
+.pop-h{background:var(--navy);color:var(--light);padding:3px 6px;font-weight:bold;display:flex;justify-content:space-between}
+.pop-x{cursor:pointer;padding:0 4px}
+.pop-b{padding:6px;max-height:350px;overflow-y:auto}
+.pop-search{margin-bottom:6px}
+.pop-search input{width:100%;border:2px inset;padding:2px;font-size:11px}
+.pop-item{padding:4px;border-bottom:1px dotted var(--dark);cursor:pointer}
+.pop-item:hover,.pop-item.sel{background:var(--navy);color:var(--light)}
+.pop-acts{display:flex;gap:4px;padding:6px;justify-content:center;border-top:2px groove var(--light)}
+.pop-acts button{padding:4px 12px;border:2px outset var(--light);background:var(--gray);font-weight:bold;cursor:pointer}
+.pop-acts button:active{border-style:inset}
+.pop-detail{padding:8px}
+.pop-detail div{margin-bottom:4px}
+.pop-detail .name{font-size:14px;font-weight:bold}
+.pop-detail .note{background:#ffffc0;border:1px solid #ccc;padding:6px;margin-top:8px;font-style:italic}
+.dial-num{font-size:28px;font-family:monospace;text-align:center;padding:20px;color:var(--green);background:var(--black);border:2px inset}
+.msg-pre{font-family:monospace;font-size:10px;white-space:pre-wrap;background:#f8f8f8;padding:8px;border:1px solid #ccc;max-height:200px;overflow:auto}
 </style>
 </head>
 <body>
@@ -93,509 +102,491 @@
 <div class="app win-out">
   <header id="header" class="win-out">
     <div id="acct-name">SELECT ACCOUNT</div>
-    <div id="clock">12:00:00</div>
+    <div id="clock">--:--:--</div>
     <div class="tab">DEL: 0</div>
     <div class="tab">PROG: 0</div>
-    <div class="tab" style="margin-left: auto" id="acct-id-disp">ID: ----</div>
+    <div class="tab" id="acct-id">ID: ----</div>
   </header>
-
-  <main id="main">
+  <main id="main" class="dim">
     <section id="script" class="win-in"></section>
-    <section id="disclaimer" class="win-in"></section>
-    <section id="form" class="win-in"></section>
-    <section id="oncall" class="win-in"></section>
-    <section id="info" class="win-in"></section>
+    <div id="bottom-area">
+      <div id="left-col">
+        <section id="disclaimer" class="win-in"></section>
+        <section id="form" class="win-in"></section>
+      </div>
+      <div id="right-col">
+        <section id="disclaimer-oncall" class="win-in"></section>
+        <section id="oncall" class="win-in"></section>
+      </div>
+    </div>
   </main>
-
   <aside id="sidebar" class="win-out"></aside>
-  
-  <footer id="dbar">
-    <input type="text" id="dbar-in" placeholder="ENTER ACCOUNT ID...">
-  </footer>
+  <footer id="dbar"><input id="dbar-in" placeholder="ACCOUNT ID OR NAME..."><span id="dbar-status">READY</span></footer>
 </div>
 
-<div id="overlay"></div>
+<div id="overlay"><div class="popup"><div class="pop-h"><span id="pop-title">POPUP</span><span class="pop-x" onclick="S.popup=null">✕</span></div><div class="pop-b" id="pop-body"></div><div class="pop-acts" id="pop-acts"></div></div></div>
 
 <script>
-/**
- * SPECTRUM FAKE - AXIOMATIC ARCHITECTURE
- * 1. State: Reactive proxy.
- * 2. Schema: Defines behavior.
- * 3. Component: Morphs based on schema.
- */
-
-// --- 1. CORE & STATE ---
-const EventBus = new EventTarget();
-const State = new Proxy({
-  account: null,     // Current Schema
-  form: { step: 0, field: 0, values: {} }, 
-  popup: null,       // { type, data }
-  mode: 'IDLE',      // 'IDLE' | 'INPUT'
-  editingId: null    // If editing a message
-}, {
-  set(target, key, value) {
-    target[key] = value;
-    EventBus.dispatchEvent(new CustomEvent(`state:${key}`, { detail: value }));
-    return true;
-  }
+// ═══════════════════════════════════════════════════════════════════════════
+// CORE: Reactive State
+// ═══════════════════════════════════════════════════════════════════════════
+const Bus = new EventTarget();
+const S = new Proxy({ account: null, form: { step: 0, idx: 0, vals: {} }, popup: null, mode: 'IDLE', editId: null, viewMsg: null }, {
+  set(t, k, v) { t[k] = v; Bus.dispatchEvent(new CustomEvent(k, { detail: v })); return true; }
 });
 
-// --- 2. STORAGE & DATA ---
+// ═══════════════════════════════════════════════════════════════════════════
+// DATA: Accounts & Storage
+// ═══════════════════════════════════════════════════════════════════════════
 const DB = {
   accounts: {
     '2000': {
       id: '2000', name: 'Training Account 6-7',
       script: [
-        { text: 'TRAINING ACCOUNT - APPOINTMENT SCHEDULING', style: 'normal' },
-        { text: '✓ Verify caller identity', style: 'good' },
-        { text: '✓ Confirm appointment location', style: 'good' },
-        { text: '⚠ DO NOT provide pricing info', style: 'warn' }
+        { text: '═══ TRAINING ACCOUNT - APPOINTMENT SCHEDULING ═══', style: 'normal' },
+        { text: '\n✓ Verify caller identity using 2-factor authentication', style: 'good' },
+        { text: '✓ Confirm appointment location from approved list', style: 'good' },
+        { text: '✓ Document all caller requests in notes field', style: 'good' },
+        { text: '\n⚠ DO NOT provide pricing information over phone', style: 'warn' },
+        { text: '⚠ NEVER confirm account numbers verbally', style: 'warn' },
+        { text: '\nSteps:\n  1. Greet caller professionally\n  2. Verify identity\n  3. Process request\n  4. Confirm details\n  5. Thank caller', style: 'normal' }
       ],
-      disclaimer: 'IFS DISCLAIMER: This is a simulation. Do not enter real PII.',
+      disclaimer: 'IFS DISCLAIMER: Training simulation only. Do not enter real customer PII. All data is logged for QA purposes.',
       form: {
-        hint: 'Tab to navigate. Shift+Enter to submit.',
+        hint: 'Tab through fields • Shift+Enter to submit',
         steps: [
           [
-            { id: 'loc', type: 'dropdown', label: 'Location', opts: ['New York', 'Chicago', 'LA'], default: 'New York' },
-            { id: 'name', type: 'text', label: 'Caller Name', req: true }
+            { id: 'loc', type: 'dropdown', label: 'Service Location', opts: ['New York - Manhattan', 'New York - Brooklyn', 'Chicago - Downtown', 'Chicago - Suburbs', 'Los Angeles - Central', 'Los Angeles - Valley'] },
+            { id: 'name', type: 'text', label: 'Caller Full Name', req: true }
           ],
           [
-            { id: 'phone', type: 'phone', label: 'Phone', req: true },
-            { id: 'type', type: 'dropdown', label: 'Appt Type', opts: ['Install', 'Repair', 'Query'] }
+            { id: 'phone', type: 'phone', label: 'Callback Number', req: true },
+            { id: 'email', type: 'email', label: 'Email Address' },
+            { id: 'type', type: 'dropdown', label: 'Appointment Type', opts: ['New Installation', 'Service Repair', 'Equipment Upgrade', 'General Inquiry', 'Billing Question'] }
           ],
           [
-            { id: 'notes', type: 'textarea', label: 'Notes' }
+            { id: 'date', type: 'text', label: 'Preferred Date (MM/DD/YYYY)' },
+            { id: 'time', type: 'dropdown', label: 'Preferred Time', opts: ['Morning (8AM-12PM)', 'Afternoon (12PM-5PM)', 'Evening (5PM-8PM)'] },
+            { id: 'notes', type: 'textarea', label: 'Additional Notes' }
           ]
         ]
       },
       oncalls: [
-        { label: 'Day Mgr', name: 'John Smith', times: '9-5 EST', dial: '555-0101', note: 'Escalations' },
-        { label: 'Night Sup', name: 'Jane Doe', times: '5-12 EST', dial: '555-0102', note: 'Emergencies' },
-        { label: 'Tech', name: 'Bob Root', times: '24/7', dial: '555-0000' }
+        { id: 'oc1', label: 'Day Manager', name: 'John Smith', times: '9:00 AM - 5:00 PM EST', dial: '555-0101', note: 'Contact for escalations and schedule changes. Prefers email first.' },
+        { id: 'oc2', label: 'Night Supervisor', name: 'Jane Doe', times: '5:00 PM - 12:00 AM EST', dial: '555-0102', note: 'Emergency contact only. Do not disturb for routine matters.' },
+        { id: 'oc3', label: 'Technical Lead', name: 'Bob Robertson', times: '24/7 On-Call', dial: '555-0103', note: 'System outages and technical emergencies only.' },
+        { id: 'oc4', label: 'Weekend Support', name: 'Alice Wang', times: 'Sat-Sun 8AM-8PM', dial: '555-0104', note: '' }
       ],
       info: [
-        'PAGE 1: GENERAL\n\nWelcome to training.\nUse PageUp/PageDown to navigate info pages.',
-        'PAGE 2: POLICIES\n\n1. Be polite.\n2. Be efficient.\n3. Be retro.',
-        'PAGE 3: CODES\n\nRed: Urgent\nBlue: Standard\nYellow: Hold'
+        'PAGE 1: OVERVIEW\n══════════════════\n\nWelcome to the Training Account.\n\nThis account is used for new agent\ntraining and certification testing.\n\nUse PageUp/PageDown to navigate\nbetween information pages.',
+        'PAGE 2: POLICIES\n══════════════════\n\n1. Always verify caller identity\n2. Document all interactions\n3. Escalate when uncertain\n4. Maintain professional tone\n5. Follow script guidelines\n6. Complete all required fields',
+        'PAGE 3: STATUS CODES\n══════════════════\n\n🔴 RED: Urgent/Emergency\n🔵 BLUE: Standard Request  \n🟡 YELLOW: On Hold/Pending\n🟢 GREEN: Completed/Resolved\n⚪ WHITE: Cancelled/Void',
+        'PAGE 4: SHORTCUTS\n══════════════════\n\n+ : Quick account search\nF2 : Message history\nF12 : Edit current message\nShift+F4 : Duplicate message\nTab : Next field\nShift+Enter : Submit form\nEsc : Close/Cancel'
       ]
     },
-    '3000': { id: '3000', name: 'Pizza Palace', script: [{text:'Pizza Order Line'}], form: {steps: [[{id:'t', type:'text', label:'Topping'}]]}, oncalls: [], info: ['Pizza menu...'] },
-    '5500': { id: '5500', name: 'Emergency Svcs', script: [{text:'URGENT LINE', style:'warn'}], form: {steps: [[{id:'x', type:'text', label:'Location'}]]}, oncalls: [], info: ['Protocols...'] }
-  },
-  saveMsg(acctId, data, idToUpdate = null) {
-    const key = `msgs_${acctId}`;
-    let msgs = JSON.parse(localStorage.getItem(key) || '[]');
-    if (idToUpdate) {
-      const idx = msgs.findIndex(m => m.id === idToUpdate);
-      if (idx > -1) msgs[idx] = { ...msgs[idx], data, updated: new Date() };
-    } else {
-      msgs.push({ id: crypto.randomUUID(), data, created: new Date() });
+    '3000': {
+      id: '3000', name: 'Pizza Palace Hotline',
+      script: [
+        { text: '🍕 PIZZA PALACE - ORDER LINE 🍕', style: 'normal' },
+        { text: '\n✓ Upsell breadsticks on every order', style: 'good' },
+        { text: '⚠ 45-minute delivery guarantee', style: 'warn' }
+      ],
+      disclaimer: 'Food allergy notice: Ask about allergies before confirming order.',
+      form: {
+        hint: 'Enter order details',
+        steps: [
+          [{ id: 'size', type: 'dropdown', label: 'Pizza Size', opts: ['Small 10"', 'Medium 14"', 'Large 18"', 'Party 24"'] }, { id: 'crust', type: 'dropdown', label: 'Crust Type', opts: ['Thin', 'Regular', 'Deep Dish', 'Stuffed'] }],
+          [{ id: 'top', type: 'text', label: 'Toppings' }, { id: 'addr', type: 'textarea', label: 'Delivery Address' }]
+        ]
+      },
+      oncalls: [{ id: 'p1', label: 'Store Manager', name: 'Tony Pepperoni', times: '10AM-10PM', dial: '555-7777', note: 'Complaints and refunds' }],
+      info: ['Menu prices:\nSmall $9.99\nMedium $13.99\nLarge $17.99\nParty $24.99', 'Toppings: $1.50 each\nPepperoni, Sausage, Mushroom\nOnion, Peppers, Olives']
+    },
+    '5500': {
+      id: '5500', name: 'Emergency Services Dispatch',
+      script: [{ text: '🚨 EMERGENCY DISPATCH CENTER 🚨', style: 'warn' }, { text: '\n⚠ VERIFY LOCATION IMMEDIATELY', style: 'warn' }, { text: '⚠ KEEP CALLER ON LINE', style: 'warn' }],
+      disclaimer: 'CRITICAL: All calls recorded. Follow emergency protocols exactly.',
+      form: { hint: 'Priority intake form', steps: [[{ id: 'loc', type: 'text', label: 'Location/Address', req: true }, { id: 'type', type: 'dropdown', label: 'Emergency Type', opts: ['Medical', 'Fire', 'Police', 'Other'] }], [{ id: 'desc', type: 'textarea', label: 'Situation Description', req: true }]] },
+      oncalls: [{ id: 'e1', label: 'Dispatch Supervisor', name: 'Chief Williams', times: '24/7', dial: '911-0001', note: 'All critical incidents' }],
+      info: ['PROTOCOLS:\n\n1. Stay calm\n2. Get location first\n3. Determine emergency type\n4. Dispatch appropriate unit\n5. Stay on line until help arrives']
     }
-    localStorage.setItem(key, JSON.stringify(msgs));
   },
-  getMsgs(acctId) { return JSON.parse(localStorage.getItem(`msgs_${acctId}`) || '[]'); }
+  msgs(id) { return JSON.parse(localStorage.getItem(`msgs_${id}`) || '[]'); },
+  save(id, data, editId = null) {
+    const k = `msgs_${id}`, arr = this.msgs(id), now = new Date().toISOString();
+    if (editId) { const i = arr.findIndex(m => m.id === editId); if (i > -1) arr[i] = { ...arr[i], data, updated: now }; }
+    else arr.unshift({ id: crypto.randomUUID(), data, created: now, label: S.account?.oncalls?.[0]?.label || 'Form' });
+    localStorage.setItem(k, JSON.stringify(arr));
+  }
 };
 
-// --- 3. COMPONENTS ---
+// ═══════════════════════════════════════════════════════════════════════════
+// COMPONENTS
+// ═══════════════════════════════════════════════════════════════════════════
 class Component {
-  constructor(id) { this.el = document.getElementById(id); this.schema = null; }
-  configure(s) { this.schema = s; this.render(); return this; }
+  constructor(sel) { this.el = document.getElementById(sel); }
+  configure(schema) { this.schema = schema; this.render(); return this; }
   render() { this.el.innerHTML = ''; }
-  handleKey(e) {}
+  key(e) {}
 }
 
 class Script extends Component {
   render() {
-    this.el.innerHTML = !this.schema ? '<div style="color:#888; padding:10px">SELECT AN ACCOUNT</div>' : 
+    this.el.innerHTML = !this.schema ? '<div class="placeholder">Select an account to view script...</div>' :
       this.schema.map(b => `<div class="${b.style === 'good' ? 'sc-good' : b.style === 'warn' ? 'sc-warn' : ''}">${b.text}</div>`).join('');
   }
 }
 
-class Info extends Component {
-  constructor(id) { super(id); this.page = 0; }
-  configure(s) { this.page = 0; return super.configure(s || []); }
-  render() {
-    if (!this.schema.length) { this.el.innerHTML = ''; return; }
-    this.el.innerHTML = `<div id="info-content">${this.schema[this.page]}</div><div id="info-pg">Page ${this.page+1}/${this.schema.length}</div>`;
-    this.resize();
-  }
-  resize() {
-    const c = this.el.querySelector('#info-content');
-    let s = 14; c.style.fontSize = s + 'px';
-    while (c.scrollHeight > this.el.clientHeight - 20 && s > 8) { c.style.fontSize = (--s) + 'px'; }
-  }
-  handleKey(e) {
-    if (e.key === 'PageDown' && this.page < this.schema.length - 1) { this.page++; this.render(); }
-    if (e.key === 'PageUp' && this.page > 0) { this.page--; this.render(); }
-  }
-}
-
 class Oncall extends Component {
-  constructor(id) { super(id); this.sel = -1; }
+  constructor(sel) { super(sel); this.sel = -1; }
   configure(s) { this.sel = -1; return super.configure(s || []); }
   render() {
-    this.el.innerHTML = this.schema.map((o, i) => `
-      <div class="oc-row ${i === this.sel ? 'sel' : ''}" data-i="${i}">
-        <div class="oc-lbl"><b>${o.label}</b></div><div class="oc-nm" style="text-align:right">${o.name}</div>
-        <div class="oc-sub">${o.times}</div>
-      </div>`).join('');
-    this.el.querySelectorAll('.oc-row').forEach(r => r.onclick = () => {
-      this.sel = +r.dataset.i; this.render(); this.open();
-    });
+    this.el.innerHTML = `<div id="oc-header"><div class="btn" style="width:20px;height:20px" onclick="C.oncall.scroll(-1)">▲</div><div class="btn" style="width:20px;height:20px" onclick="C.oncall.scroll(1)">▼</div></div><div id="oc-list"></div>`;
+    const list = this.el.querySelector('#oc-list');
+    list.innerHTML = this.schema.map((o, i) =>
+      `<div class="oc-row${i === this.sel ? ' sel' : ''}" data-i="${i}"><b>${o.label}</b><span style="text-align:right">${o.name}</span><div class="oc-sub">${o.times}</div></div>`
+    ).join('');
+    list.querySelectorAll('.oc-row').forEach(r => r.onclick = () => { this.sel = +r.dataset.i; this.render(); this.open(); });
   }
-  handleKey(e) {
-    if (!this.schema.length) return;
-    if (e.key === 'ArrowDown') { this.sel = Math.min(this.sel + 1, this.schema.length - 1); this.render(); this.el.children[this.sel]?.scrollIntoView(false); }
-    if (e.key === 'ArrowUp') { this.sel = Math.max(this.sel - 1, 0); this.render(); this.el.children[this.sel]?.scrollIntoView(false); }
-    if (e.key === 'Enter' && this.sel > -1) this.open();
+  scroll(dir) {
+    const list = this.el.querySelector('#oc-list');
+    list.scrollBy({ top: dir * 40, behavior: 'smooth' });
   }
-  open() { State.popup = { type: 'oncall', data: this.schema[this.sel] }; }
+  key(e) {
+    // Keyboard controls removed to avoid taking focus from the form
+  }
+  open() { S.popup = { type: 'oncall', data: this.schema[this.sel] }; }
 }
 
 class Form extends Component {
   configure(s) {
-    this.schema = s || { steps: [] }; 
-    this.fields = []; // Flattened list of field instances
+    this.schema = s; 
+    this.fields = []; 
     this.el.innerHTML = '';
-    if (!s) return this;
     
-    // Header
-    if (s.hint) this.el.innerHTML += `<div class="form-hint">${s.hint}</div>`;
+    // Guard: If no schema, stop here
+    if (!s?.steps?.length) return this;
     
-    // Steps
-    s.steps.forEach((stepFields, stepIdx) => {
-      const stepDiv = document.createElement('div');
-      stepDiv.className = `step step-${stepIdx}`;
-      stepFields.forEach((fSchema) => {
-        const wrap = document.createElement('div');
-        wrap.className = 'field';
-        // Factory for input types
-        let inputHtml = '';
-        if (fSchema.type === 'dropdown') {
-          inputHtml = `<div class="dd-wrap"><div class="dd-disp"><span>${fSchema.default || 'Select...'}</span><span>▼</span></div><div class="dd-list">${fSchema.opts.map(o=>`<div class="dd-opt">${o}</div>`).join('')}</div></div>`;
-        } else if (fSchema.type === 'textarea') {
-          inputHtml = `<textarea rows="3"></textarea>`;
-        } else {
-          inputHtml = `<input type="${fSchema.type === 'phone' ? 'tel' : 'text'}" value="${fSchema.default||''}">`;
-        }
-        wrap.innerHTML = `<label class="label">${fSchema.label}</label>${inputHtml}`;
-        wrap.schema = fSchema; // Bind schema to DOM
-        stepDiv.appendChild(wrap);
-        this.fields.push({ el: wrap, step: stepIdx, type: fSchema.type, val: fSchema.default || '' });
+    // Render Steps
+    if (s.hint) this.el.insertAdjacentHTML('beforeend', `<div class="form-hint">${s.hint}</div>`);
+    s.steps.forEach((step, si) => {
+      const div = document.createElement('div');
+      div.className = 'step';
+      step.forEach(f => {
+        const w = document.createElement('div');
+        w.className = 'field';
+        w.innerHTML = `<label class="lbl">${f.label}${f.req ? ' *' : ''}</label>` + (
+          f.type === 'dropdown' ? `<div class="dd-wrap"><div class="dd-disp" tabindex="0"><span>${f.opts?.[0] || ''}</span><span>▼</span></div><div class="dd-list">${(f.opts || []).map((o, i) => `<div class="dd-opt${i === 0 ? ' sel' : ''}">${o}</div>`).join('')}</div></div>` :
+          f.type === 'textarea' ? '<textarea rows="2"></textarea>' : `<input type="${f.type === 'phone' ? 'tel' : f.type === 'email' ? 'email' : 'text'}">`
+        );
+        div.appendChild(w);
+        this.fields.push({ el: w, step: si, schema: f, val: f.opts?.[0] || '' });
       });
-      this.el.appendChild(stepDiv);
+      this.el.appendChild(div);
     });
     
-    this.el.innerHTML += `<div class="submit-bar">ENTER OR TAB TO FILE</div>`;
-    this.sync();
+    this.el.insertAdjacentHTML('beforeend', '<div class="submit-bar btn" onclick="C.form.submit()">SUBMIT (SHIFT+ENTER)</div>');
+    return this.sync();
+  }
+
+  sync() {
+    // If fields are empty (Success State), do nothing
+    if (!this.fields.length) return this;
+
+    const { step, idx } = S.form;
+    this.el.querySelectorAll('.step').forEach((s, i) => s.classList.toggle('active', i === step));
+    
+    let gi = 0;
+    this.schema?.steps?.forEach((sf, si) => sf.forEach((_, fi) => {
+      const f = this.fields[gi], isAct = si === step && fi === idx, isPast = si < step || (si === step && fi < idx);
+      f.el.classList.toggle('active', isAct);
+      f.el.classList.toggle('locked', isPast);
+      
+      const inp = f.el.querySelector('input,textarea');
+      if (inp) { 
+        f.val = inp.value; 
+        if (isAct) { inp.focus(); inp.select(); } 
+      } else { 
+        f.el.querySelector('.dd-disp span').textContent = f.val || 'Select...'; 
+        if (isAct) f.el.querySelector('.dd-disp').focus(); 
+      }
+      gi++;
+    }));
+    
+    const last = step === (this.schema?.steps?.length || 1) - 1;
+    this.el.querySelector('.submit-bar')?.classList.toggle('show', last);
     return this;
   }
-  
-  sync() {
-    const { step, field } = State.form;
-    const isLast = step === this.schema.steps.length - 1 && field === this.schema.steps[step].length - 1;
-    
-    // Manage Steps visibility
-    this.el.querySelectorAll('.step').forEach((s, i) => s.classList.toggle('active', i <= step));
-    this.el.querySelector('.submit-bar').style.display = isLast ? 'block' : 'none';
 
-    // Manage Fields state
-    let globalIdx = 0;
-    this.schema.steps.forEach((sFields, sIdx) => {
-      sFields.forEach((_, fIdx) => {
-        const fWrapper = this.fields[globalIdx].el;
-        const isActive = sIdx === step && fIdx === field;
-        const isPast = sIdx < step || (sIdx === step && fIdx < field);
-        
-        fWrapper.classList.toggle('active', isActive);
-        fWrapper.classList.toggle('locked', isPast);
-        
-        const inp = fWrapper.querySelector('input, textarea, .dd-disp');
-        if (isActive) inp.focus();
-        
-        // Update values from DOM to memory (reactive binding helper)
-        if (fWrapper.querySelector('input, textarea')) {
-           this.fields[globalIdx].val = fWrapper.querySelector('input, textarea').value;
-        } else {
-           fWrapper.querySelector('.dd-disp span').innerText = this.fields[globalIdx].val || 'Select...';
-        }
-        globalIdx++;
-      });
-    });
+  curField() {
+    if (!this.fields.length) return null;
+    let i = 0;
+    for (let s = 0; s < S.form.step; s++) i += this.schema.steps[s].length;
+    return this.fields[i + S.form.idx];
   }
 
-  handleKey(e) {
-    if (!this.schema) return;
-    const { step, field } = State.form;
-    const currentStepFields = this.schema.steps[step];
+  nav(dir) {
+    if (!this.fields.length) return; // Block nav in success state
+    const { step, idx } = S.form, steps = this.schema.steps;
+    const isLast = step === steps.length - 1 && idx === steps[step].length - 1;
     
-    // Find current field implementation
-    let flatIdx = 0;
-    for(let i=0; i<step; i++) flatIdx += this.schema.steps[i].length;
-    flatIdx += field;
-    const fieldObj = this.fields[flatIdx];
+    if (dir > 0) {
+      if (idx < steps[step].length - 1) S.form = { ...S.form, idx: idx + 1 };
+      else if (step < steps.length - 1) S.form = { ...S.form, step: step + 1, idx: 0 };
+      else if (isLast) return this.submit();
+    } else {
+      if (idx > 0) S.form = { ...S.form, idx: idx - 1 };
+      else if (step > 0) S.form = { ...S.form, step: step - 1, idx: steps[step - 1].length - 1 };
+    }
+    this.sync();
+  }
+
+  key(e) {
+    if (!this.schema) return;
+
+    // PATCH: Handle Success State (Schema exists, but fields are wiped)
+    if (this.fields.length === 0) {
+      if (e.key === 'Enter') { e.preventDefault(); this.reset(); }
+      return;
+    }
+
+    const f = this.curField();
+    if (!f) return;
 
     // Dropdown Logic
-    if (fieldObj.type === 'dropdown') {
-      const list = fieldObj.el.querySelector('.dd-list');
-      const isOpen = list.style.display === 'block';
-      const opts = fieldObj.el.schema.opts;
-      let idx = opts.indexOf(fieldObj.val);
-
+    if (f.schema.type === 'dropdown') {
+      const list = f.el.querySelector('.dd-list'), open = list.classList.contains('open'), opts = f.schema.opts, cur = opts.indexOf(f.val);
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        if (!isOpen) { list.style.display = 'block'; }
-        else if (idx < opts.length - 1) { fieldObj.val = opts[idx+1]; this.sync(); }
+        if (!open) list.classList.add('open');
+        else if (cur < opts.length - 1) { f.val = opts[cur + 1]; list.querySelectorAll('.dd-opt').forEach((o, i) => o.classList.toggle('sel', i === cur + 1)); }
         return;
       }
-      if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        if (idx > 0) { fieldObj.val = opts[idx-1]; this.sync(); }
-        return;
-      }
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (isOpen) { list.style.display = 'none'; return; }
-        // Fallthrough to navigate
-      }
-    }
-
-    // Navigation
-    if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey)) {
-      e.preventDefault();
-      if (e.shiftKey) { // Back
-        if (field > 0) State.form = { ...State.form, field: field - 1 };
-        else if (step > 0) State.form = { ...State.form, step: step - 1, field: this.schema.steps[step-1].length - 1 };
-      } else { // Fwd
-        if (field < currentStepFields.length - 1) State.form = { ...State.form, field: field + 1 };
-        else if (step < this.schema.steps.length - 1) State.form = { ...State.form, step: step + 1, field: 0 };
-      }
-      this.sync();
+      if (e.key === 'ArrowUp' && open) { e.preventDefault(); if (cur > 0) { f.val = opts[cur - 1]; list.querySelectorAll('.dd-opt').forEach((o, i) => o.classList.toggle('sel', i === cur - 1)); } return; }
+      if (e.key === 'Enter' && open) { e.preventDefault(); list.classList.remove('open'); this.sync(); return; }
+      if (e.key === 'Escape' && open) { e.preventDefault(); list.classList.remove('open'); return; }
     }
     
-    // Submit
-    if (e.key === 'Enter' && e.shiftKey) {
-      const isLast = step === this.schema.steps.length - 1 && field === currentStepFields.length - 1;
-      if (isLast) {
-        const data = {};
-        this.fields.forEach(f => data[f.el.schema.id] = f.val);
-        DB.saveMsg(State.account.id, data, State.editingId);
-        State.editingId = null;
-        State.form = { step: 0, field: 0 }; // Reset
-        this.configure(this.schema); // Re-render clean
-        alert('FILED TO DATABASE');
-      }
-    }
+    // Nav Logic
+    if (e.key === 'Tab') { e.preventDefault(); this.nav(e.shiftKey ? -1 : 1); }
+    if (e.key === 'Enter') { e.preventDefault(); if (e.shiftKey) this.submit(); else this.nav(1); }
+  }
+
+  submit() {
+    if (!S.account) return;
+    
+    // 1. Capture Data
+    const data = {}; 
+    this.fields.forEach(f => {
+      const inp = f.el.querySelector('input,textarea');
+      if (inp) f.val = inp.value;
+      data[f.schema.id] = f.val;
+    });
+    
+    // 2. Persist
+    DB.save(S.account.id, data, S.editId);
+    
+    // 3. Render Success State (Disconnects fields to prevent nav)
+    this.fields = []; 
+    this.el.innerHTML = `
+      <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--dark)">
+        <div style="font-size:40px;color:var(--green);margin-bottom:10px">✓</div>
+        <div style="font-weight:bold;margin-bottom:20px">\${S.editId ? 'MESSAGE UPDATED' : 'MESSAGE FILED'}</div>
+        <div class="btn" style="padding:4px 12px;background:var(--light)" onclick="C.form.reset()">NEW ENTRY (ENTER)</div>
+      </div>
+    `;
+    
+    document.getElementById('dbar-status').textContent = '✓ SUCCESS';
+  }
+
+  reset() {
+    S.editId = null; 
+    S.form = { step: 0, idx: 0, vals: {} };
+    document.getElementById('dbar-status').textContent = 'READY';
+    this.configure(this.schema);
   }
 
   fill(data) {
     this.fields.forEach(f => {
-      if (data[f.el.schema.id]) f.val = data[f.el.schema.id];
+      if (data[f.schema.id] !== undefined) {
+        f.val = data[f.schema.id];
+        const inp = f.el.querySelector('input,textarea');
+        if (inp) inp.value = f.val;
+      }
     });
+    S.form = { step: this.schema.steps.length - 1, idx: this.schema.steps[this.schema.steps.length - 1].length - 1, vals: {} };
     this.sync();
   }
 }
 
 class Popup extends Component {
-  constructor(id) { super(id); this.sel = 0; }
+  constructor(sel) { super(sel); this.sel = 0; this.list = []; this.filter = ''; }
   render() {
-    this.el.style.display = State.popup ? 'flex' : 'none';
-    if (!State.popup) return;
-    
-    const { type, data } = State.popup;
-    let title = '', body = '', acts = '';
-    this.list = null; // for navigation
-
+    const o = document.getElementById('overlay'), t = document.getElementById('pop-title'), b = document.getElementById('pop-body'), a = document.getElementById('pop-acts');
+    o.classList.toggle('show', !!S.popup);
+    if (!S.popup) return;
+    const { type, data } = S.popup;
+    this.sel = 0; this.list = [];
     if (type === 'accounts') {
-      title = 'SELECT ACCOUNT';
-      this.list = Object.values(DB.accounts);
-      body = this.list.map((a, i) => `<div class="pop-item ${i===this.sel?'sel':''}" data-i="${i}">${a.id} - ${a.name}</div>`).join('');
+      t.textContent = 'SELECT ACCOUNT';
+      this.list = Object.values(DB.accounts).filter(ac => !this.filter || ac.id.includes(this.filter) || ac.name.toLowerCase().includes(this.filter.toLowerCase()));
+      b.innerHTML = `<div class="pop-search"><input id="acct-search" placeholder="Search ID or name..." value="${this.filter}"></div>` +
+        (this.list.length ? this.list.map((ac, i) => `<div class="pop-item${i === this.sel ? ' sel' : ''}" data-i="${i}">${ac.id} — ${ac.name}</div>`).join('') : '<div style="padding:8px;color:#888">No accounts found</div>');
+      a.innerHTML = '';
+      setTimeout(() => {
+        const s = document.getElementById('acct-search');
+        s?.focus();
+        s?.addEventListener('input', e => { this.filter = e.target.value; this.render(); });
+      }, 0);
     } else if (type === 'messages') {
-      title = 'HISTORY';
+      t.textContent = `HISTORY — ${S.account.name}`;
       this.list = data;
-      body = data.length ? data.map((m, i) => `<div class="pop-item ${i===this.sel?'sel':''}" data-i="${i}">${m.created.slice(0,10)} - ${JSON.stringify(m.data).slice(0,30)}...</div>`).join('') : '<div style="padding:10px">No messages found.</div>';
+      b.innerHTML = this.list.length ? this.list.map((m, i) => `<div class="pop-item${i === this.sel ? ' sel' : ''}" data-i="${i}"><b>${m.label || 'Message'}</b><br><small>${new Date(m.created).toLocaleString()}</small></div>`).join('') : '<div style="padding:8px;color:#888">No messages yet.</div>';
+      a.innerHTML = '';
     } else if (type === 'oncall') {
-      title = 'CONTACT DETAIL';
-      body = `<div style="padding:10px"><b>${data.name}</b><br>${data.label}<br>${data.times}<br><br><i>${data.note||''}</i></div>`;
-      acts = `<button onclick="actions.pmd()">PMD</button><button onclick="actions.dial('${data.dial}')">DIAL</button>`;
+      t.textContent = 'CONTACT DETAIL';
+      b.innerHTML = `<div class="pop-detail"><div class="name">${data.name}</div><div>${data.label}</div><div>${data.times}</div>${data.note ? `<div class="note">${data.note}</div>` : ''}</div>`;
+      a.innerHTML = '<button onclick="C.popup.pmd()">PMD</button><button onclick="C.popup.dial()">DIAL</button>';
     } else if (type === 'dial') {
-      title = 'DIALING...';
-      body = `<div style="font-size:24px; font-family:monospace; text-align:center; padding:20px; color:lime; background:black">${data}</div>`;
-      acts = `<button onclick="State.popup=null">HANG UP</button>`;
-    } else if (type === 'msg_detail') {
-      title = 'MESSAGE VIEW';
-      body = `<div style="padding:10px"><pre>${JSON.stringify(data.data, null, 2)}</pre></div>`;
+      t.textContent = 'DIALING...';
+      b.innerHTML = `<div class="dial-num">${data}</div>`;
+      a.innerHTML = '<button onclick="S.popup=null">HANG UP</button>';
+    } else if (type === 'msg_view') {
+      t.textContent = 'MESSAGE DETAIL';
+      S.viewMsg = data;
+      b.innerHTML = `<div><small>${new Date(data.created).toLocaleString()}${data.updated ? ' (edited)' : ''}</small></div><div class="msg-pre">${Object.entries(data.data).map(([k, v]) => `${k}: ${v}`).join('\n')}</div>`;
+      a.innerHTML = '<button onclick="C.popup.editMsg()">F12 Edit</button><button onclick="C.popup.dupeMsg()">Shift+F4 Dupe</button>';
     }
-
-    this.el.innerHTML = `
-      <div class="popup">
-        <div class="pop-h"><span>${title}</span><span style="cursor:pointer" onclick="State.popup=null">X</span></div>
-        <div class="pop-b">${body}</div>
-        ${acts ? `<div class="pop-act">${acts}</div>` : ''}
-      </div>`;
-    
-    // Bind click
-    this.el.querySelectorAll('.pop-item').forEach(el => {
-      el.onclick = () => this.select(+el.dataset.i);
-    });
+    b.querySelectorAll('.pop-item').forEach(el => el.onclick = () => this.pick(+el.dataset.i));
   }
-
-  select(idx) {
-    const { type } = State.popup;
-    if (type === 'accounts') {
-      actions.loadAccount(this.list[idx].id);
-    } else if (type === 'messages') {
-      State.popup = { type: 'msg_detail', data: this.list[idx] }; // Drill down
-    }
+  pick(i) {
+    const { type } = S.popup;
+    if (type === 'accounts') { const ac = this.list[i]; if (ac) { this.filter = ''; Actions.load(ac.id); } }
+    else if (type === 'messages' && this.list[i]) S.popup = { type: 'msg_view', data: this.list[i] };
   }
-
-  handleKey(e) {
-    if (!State.popup) return;
-    if (e.key === 'Escape') { State.popup = null; return; }
-    
-    // List nav
-    if (this.list) {
-      if (e.key === 'ArrowDown') { this.sel = Math.min(this.sel+1, this.list.length-1); this.render(); }
-      if (e.key === 'ArrowUp') { this.sel = Math.max(this.sel-1, 0); this.render(); }
-      if (e.key === 'Enter') this.select(this.sel);
+  key(e) {
+    if (!S.popup) return;
+    if (e.key === 'Escape') { S.popup = null; return; }
+    if (this.list.length) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); this.sel = Math.min(this.sel + 1, this.list.length - 1); this.render(); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); this.sel = Math.max(this.sel - 1, 0); this.render(); }
+      if (e.key === 'Enter') { e.preventDefault(); this.pick(this.sel); }
     }
-    
-    // Message Detail Actions
-    if (State.popup.type === 'msg_detail') {
-      if (e.key === 'F12') { // Edit
-        State.editingId = State.popup.data.id;
-        comps.form.fill(State.popup.data.data);
-        State.popup = null;
-      }
-      if (e.key === 'F4' && e.shiftKey) { // Duplicate
-        comps.form.fill(State.popup.data.data);
-        State.popup = null;
-      }
+    if (S.popup?.type === 'msg_view') {
+      if (e.key === 'F12') { e.preventDefault(); this.editMsg(); }
+      if (e.key === 'F4' && e.shiftKey) { e.preventDefault(); this.dupeMsg(); }
     }
   }
+  pmd() { S.popup = null; document.getElementById('dbar-status').textContent = '✓ PMD SENT'; setTimeout(() => document.getElementById('dbar-status').textContent = 'READY', 2000); }
+  dial() { S.popup = { type: 'dial', data: S.popup.data.dial }; }
+  editMsg() { S.editId = S.viewMsg.id; C.form.fill(S.viewMsg.data); S.popup = null; }
+  dupeMsg() { C.form.fill(S.viewMsg.data); S.editId = null; S.popup = null; }
 }
 
-// --- 4. APP WIRING ---
-const comps = {
+// ═══════════════════════════════════════════════════════════════════════════
+// ACTIONS & WIRING
+// ═══════════════════════════════════════════════════════════════════════════
+const Actions = {
+  load(id) {
+    const ac = DB.accounts[id];
+    if (!ac) { document.getElementById('dbar-status').textContent = '✗ NOT FOUND'; return; }
+    S.account = ac; S.popup = null; S.form = { step: 0, idx: 0, vals: {} }; S.editId = null;
+  },
+  clear() {
+    S.popup = null;
+    if (S.account) {
+      S.account = null; S.form = { step: 0, idx: 0, vals: {} };
+      document.getElementById('acct-name').textContent = 'SELECT ACCOUNT';
+      document.getElementById('acct-name').classList.remove('active');
+      document.getElementById('acct-id').textContent = 'ID: ----';
+      document.getElementById('disclaimer').textContent = '';
+      document.getElementById('disclaimer-oncall').textContent = '';
+      document.getElementById('main').classList.add('dim');
+      C.script.configure(null); C.form.configure(null); C.oncall.configure(null);
+    }
+  }
+};
+
+const C = {
   script: new Script('script'),
   form: new Form('form'),
   oncall: new Oncall('oncall'),
-  info: new Info('info'),
   popup: new Popup('overlay')
 };
 
-const actions = {
-  loadAccount(id) {
-    const acct = DB.accounts[id];
-    if (acct) {
-      State.account = acct;
-      State.popup = null;
-      State.form = { step: 0, field: 0 };
-    } else {
-      alert('Account not found');
-    }
-  },
-  pmd() { State.popup = null; alert('PMD SENT'); },
-  dial(num) { State.popup = { type: 'dial', data: num }; }
-};
-
-// Wiring State to Components
-EventBus.addEventListener('state:account', (e) => {
-  const s = e.detail;
-  document.getElementById('acct-name').innerText = s.name;
-  document.getElementById('acct-id-disp').innerText = `ID: ${s.id}`;
-  document.getElementById('acct-name').style.color = 'red';
-  document.getElementById('disclaimer').innerText = s.disclaimer || '';
+// State subscriptions
+Bus.addEventListener('account', e => {
+  const ac = e.detail;
+  if (!ac) return;
+  document.getElementById('acct-name').textContent = ac.name;
+  document.getElementById('acct-name').classList.add('active');
+  document.getElementById('acct-id').textContent = `ID: ${ac.id}`;
+  document.getElementById('disclaimer').textContent = ac.disclaimer || '';
+  document.getElementById('disclaimer-oncall').textContent = ac.disclaimer || '';
   document.getElementById('main').classList.remove('dim');
-  
-  comps.script.configure(s.script);
-  comps.form.configure(s.form);
-  comps.oncall.configure(s.oncalls);
-  comps.info.configure(s.info);
+  C.script.configure(ac.script);
+  C.form.configure(ac.form);
+  C.oncall.configure(ac.oncalls);
+});
+Bus.addEventListener('popup', () => C.popup.render());
+Bus.addEventListener('mode', e => {
+  const d = document.getElementById('dbar'), inp = document.getElementById('dbar-in');
+  d.classList.toggle('input', e.detail === 'INPUT');
+  document.getElementById('main').classList.toggle('dim', e.detail === 'INPUT' || !S.account);
+  if (e.detail === 'INPUT') { inp.value = ''; inp.focus(); }
 });
 
-EventBus.addEventListener('state:popup', () => comps.popup.render());
-EventBus.addEventListener('state:mode', (e) => {
-  const dbar = document.getElementById('dbar');
-  const dbarIn = document.getElementById('dbar-in');
-  if (e.detail === 'INPUT') {
-    dbar.classList.add('input-mode');
-    document.getElementById('main').classList.add('dim');
-    dbarIn.value = '';
-    dbarIn.focus();
-  } else {
-    dbar.classList.remove('input-mode');
-    document.getElementById('main').classList.remove('dim');
-    if (State.account) document.getElementById('main').classList.remove('dim');
-  }
-});
-
-// Sidebar Generator
-const sb = document.getElementById('sidebar');
-const btns = ['Sys', 'Queue', 'Accts', 'Dial', 'Hold', 'Xfer', 'Conf', 'Park', 'Mute', 'Rel', 'Log', 'Spv', 'Help', 'Brws', 'Mail', 'Chat', 'Calc', 'Note', 'Cal', 'Map', 'Weath', 'PAGE'];
-btns.forEach((b, i) => {
+// Sidebar
+const sidebar = document.getElementById('sidebar');
+['SYS', 'QUEUE', 'ACCTS', 'BRWSR', 'DIAL', 'HOLD', 'XFER', 'CONF', 'PARK', 'PATCH', 'MUTE', 'REL', 'LOG', 'SUPV', 'HELP', 'MAIL', 'CHAT', 'CALC', 'NOTE', 'CLEAR', 'F2', 'PAGE'].forEach(b => {
   const btn = document.createElement('div');
-  btn.className = `btn ${['Hold','Conf'].includes(b)?'yel':['Park','Xfer'].includes(b)?'pnk':b==='PAGE'?'blk':''}`;
-  btn.innerText = b;
-  if (b === 'Accts') btn.onclick = () => State.popup = { type: 'accounts' };
-  else if (b === 'PAGE') btn.onclick = () => alert('PAGING...');
-  else btn.onclick = () => {}; // Dummy
-  sb.appendChild(btn);
+  btn.className = 'btn' + ({ HOLD: ' yel', CONF: ' yel', PARK: ' pnk', PATCH: ' pnk', CLEAR: ' red', PAGE: ' blk' }[b] || '');
+  btn.textContent = b;
+  btn.onclick = () => {
+    if (b === 'ACCTS') S.popup = { type: 'accounts' };
+    else if (b === 'CLEAR') Actions.clear();
+    else if (b === 'F2' && S.account) S.popup = { type: 'messages', data: DB.msgs(S.account.id) };
+  };
+  sidebar.appendChild(btn);
 });
 
 // Clock
 setInterval(() => {
-  document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-US', {hour12:false});
+  const d = new Date();
+  document.getElementById('clock').textContent = d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/New_York' }) + ' ' +
+    d.toLocaleTimeString('en-US', { hour12: false, timeZone: 'America/New_York' });
 }, 1000);
 
-// Global Input Controller
-document.addEventListener('keydown', (e) => {
-  // Mode Switching
-  if (e.key === '+' || e.key === '=') { 
-    e.preventDefault(); State.mode = 'INPUT'; return; 
-  }
-  if (State.mode === 'INPUT') {
-    if (e.key === 'Escape' || e.key === '`') { State.mode = 'IDLE'; return; }
-    if (e.key === 'Enter') {
-      const val = document.getElementById('dbar-in').value;
-      actions.loadAccount(val);
-      State.mode = 'IDLE';
-    }
-    return; // Block other keys in input mode
-  }
-
-  // Global Hotkeys
-  if (e.key === 'F2') { 
-    e.preventDefault(); 
-    if(State.account) State.popup = { type: 'messages', data: DB.getMsgs(State.account.id) };
+// ═══════════════════════════════════════════════════════════════════════════
+// KEYBOARD CONTROLLER
+// ═══════════════════════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  // Display mode toggle
+  if ((e.key === '+' || (e.key === '=' && e.shiftKey)) && S.mode !== 'INPUT') { e.preventDefault(); S.mode = 'INPUT'; return; }
+  // Input mode handling
+  if (S.mode === 'INPUT') {
+    if (e.key === 'Escape' || e.key === '`') { S.mode = 'IDLE'; return; }
+    if (e.key === 'Enter') { Actions.load(document.getElementById('dbar-in').value.trim()); S.mode = 'IDLE'; return; }
     return;
   }
-  if (e.key === 'Escape') { State.popup = null; return; }
+  // Global hotkeys
+  if (e.key === 'F2') { e.preventDefault(); if (S.account) S.popup = { type: 'messages', data: DB.msgs(S.account.id) }; return; }
+  if (e.key === 'Escape') { if (S.popup) S.popup = null; return; }
+  // Popup takes priority
+  if (S.popup) { C.popup.key(e); return; }
+  // Account-level delegation
+  if (S.account) {
+    // Form gets: Tab, Enter (with shift or on last field), and arrow keys when dropdown is open
+    if (e.key === 'Tab') { C.form.key(e); return; }
+    if (e.key === 'Enter') { C.form.key(e); return; }
+    if (document.querySelector('.dd-list.open') && ['ArrowUp', 'ArrowDown', 'Enter', 'Escape'].includes(e.key)) {
+      C.form.key(e);
+      return;
+    }
 
-  // Component Delegation
-  if (State.popup) { comps.popup.handleKey(e); return; }
-  if (State.account) {
-    // Determine active focus based on click (simple heuristic: click sets focus class?)
-    // For this retro app, we assume keyboard priority based on key type
-    if (e.key === 'Tab' || (e.key === 'Enter' && e.shiftKey)) { comps.form.handleKey(e); return; }
-    if (e.key.startsWith('Page')) { comps.info.handleKey(e); return; }
-    
-    // Ambiguous keys (Arrows, Enter) - Logic: If form has focus (clicked), form wins. Else Oncall.
-    // Defaulting to Form for Arrows if dropdown open, else Oncall.
-    // Simplifying for UX: Form gets Tab. Oncall gets Arrows. 
-    // BUT Dropdowns need arrows.
-    
-    // Check if a dropdown is open
-    const openDD = document.querySelector('.dd-list[style*="block"]');
-    if (openDD) { comps.form.handleKey(e); return; }
-
-    if (['ArrowUp', 'ArrowDown'].includes(e.key)) comps.oncall.handleKey(e);
-    if (e.key === 'Enter') comps.oncall.handleKey(e); // Opens popup
+    // Oncall keyboard controls removed to prioritize Form functionality
   }
 });
-
-// Initialize
-document.getElementById('main').classList.add('dim'); // Start dimmed
 </script>
 </body>
 </html>
