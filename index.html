@@ -1,719 +1,601 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spectrum Agent 111</title>
-    <style>
-        :root {
-            --sys-gray: #f0f0f0;
-            --sys-border: #a0a0a0;
-            --sys-dark: #404040;
-            --win-teal: #008080;
-            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            --font-mono: 'Courier New', Courier, monospace;
-        }
+<meta charset="UTF-8">
+<title>Spectrum Fake</title>
+<style>
+  :root {
+    --bg: #008080; --gray: #c0c0c0; --dark: #808080; --light: #ffffff;
+    --navy: #000080; --black: #000000; --green: #00ff00; --red: #ff0000;
+    --font: 'MS Sans Serif', Tahoma, sans-serif;
+  }
+  * { box-sizing: border-box; user-select: none; }
+  body { margin: 0; background: var(--bg); height: 100vh; font-family: var(--font); font-size: 11px; overflow: hidden; }
+  
+  /* Layout */
+  .app { display: grid; grid-template-areas: "h h" "m s" "d d"; grid-template-rows: auto 1fr auto; grid-template-columns: 1fr 90px; height: 100%; padding: 2px; background: var(--gray); }
+  .win-out { border: 2px solid; border-color: var(--light) var(--dark) var(--dark) var(--light); }
+  .win-in { border: 2px solid; border-color: var(--dark) var(--light) var(--light) var(--dark); background: var(--light); }
+  
+  /* Header */
+  #header { grid-area: h; display: flex; gap: 8px; padding: 4px; background: var(--navy); color: var(--light); align-items: center; margin-bottom: 2px; }
+  #acct-name { color: var(--red); font-weight: bold; min-width: 250px; }
+  #clock { background: var(--black); color: var(--green); padding: 2px 6px; font-family: monospace; border: 1px inset; }
+  .tab { background: var(--gray); color: var(--black); padding: 2px 8px; border: 2px outset var(--light); }
+  
+  /* Main Area */
+  #main { grid-area: m; display: grid; grid-template-rows: 2fr auto 3fr 2fr 2fr; gap: 4px; padding-right: 4px; overflow: hidden; }
+  section { background: var(--light); overflow: auto; position: relative; }
+  section.dim { pointer-events: none; opacity: 0.7; background: #ddd; }
 
-        * { box-sizing: border-box; user-select: none; }
-        body {
-            margin: 0;
-            background-color: var(--sys-gray);
-            font-family: var(--font-main);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            font-size: 13px;
-        }
+  /* Script */
+  #script { font-family: monospace; padding: 5px; white-space: pre-wrap; }
+  .sc-good { color: green; font-weight: bold; }
+  .sc-warn { color: red; font-weight: bold; }
+  
+  /* Disclaimer */
+  #disclaimer { background: #ffffc0; padding: 4px; height: 40px; display: flex; align-items: center; font-weight: bold; }
 
-        .flex { display: flex; }
-        .col { flex-direction: column; }
-        .grow { flex: 1; }
-        .bold { font-weight: bold; }
-        .red-text { color: red; }
-        .bg-teal { background-color: var(--win-teal); color: white; }
+  /* Form */
+  #form { padding: 8px; background: var(--gray); }
+  .form-hint { color: var(--navy); font-weight: bold; margin-bottom: 5px; }
+  .step { display: none; }
+  .step.active { display: block; }
+  .field { margin-bottom: 4px; }
+  .label { font-weight: bold; display: block; }
+  input, select, textarea { width: 100%; border: 2px inset; font-family: var(--font); font-size: 11px; padding: 2px; background: var(--light); }
+  .field.locked input, .field.locked select, .field.locked textarea { background: var(--gray); color: #555; pointer-events: none; }
+  .field.active input, .field.active select, .field.active textarea { background: #ffffc0; }
+  .submit-bar { margin-top: 10px; background: var(--gray); border: 2px inset; padding: 5px; text-align: center; font-weight: bold; color: var(--dark); display: none; }
+  
+  /* Dropdown Custom */
+  .dd-wrap { position: relative; }
+  .dd-disp { border: 2px inset; background: var(--light); padding: 2px; cursor: pointer; display: flex; justify-content: space-between; }
+  .dd-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--light); border: 2px solid var(--black); z-index: 100; max-height: 100px; overflow-y: auto; display: none; }
+  .dd-opt { padding: 2px; cursor: pointer; }
+  .dd-opt:hover, .dd-opt.sel { background: var(--navy); color: var(--light); }
 
-        .app-window {
-            display: grid;
-            grid-template-columns: 1fr 60px;
-            grid-template-rows: auto auto 1fr auto auto;
-            height: 100%;
-            border: 1px solid #888;
-        }
+  /* Oncall */
+  .oc-row { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #eee; padding: 2px; cursor: pointer; }
+  .oc-row.sel { background: var(--navy); color: var(--light); }
+  .oc-sub { grid-column: 1 / -1; font-size: 0.85em; color: var(--dark); padding-left: 4px; }
+  .oc-row.sel .oc-sub { color: #ccc; }
 
-        .header-strip {
-            background: linear-gradient(to bottom, #f9f9f9, #e0e0e0);
-            padding: 4px 8px;
-            border-bottom: 1px solid #ccc;
-            justify-content: space-between;
-            font-weight: bold;
-            font-size: 14px;
-        }
+  /* Info */
+  #info { padding: 4px; display: flex; flex-direction: column; }
+  #info-content { flex: 1; white-space: pre-wrap; overflow: hidden; }
+  #info-pg { text-align: right; color: var(--dark); font-size: 0.8em; margin-top: 2px; }
 
-        .status-bar {
-            display: flex;
-            background: #e6e6e6;
-            border-bottom: 1px solid #999;
-            padding: 2px;
-        }
-        .status-tab {
-            border: 1px solid #888;
-            background: white;
-            padding: 2px 8px;
-            margin-right: 4px;
-            color: blue;
-            font-weight: bold;
-            box-shadow: inset 1px 1px 2px #ccc;
-        }
-        .status-tab.active { background: blue; color: white; }
-        .status-tab.info { background: #e0e0f0; color: blue; width: 300px; text-align: center; }
+  /* Sidebar */
+  #sidebar { grid-area: s; display: grid; grid-template-rows: repeat(22, 1fr); gap: 2px; background: var(--gray); }
+  .btn { border: 2px outset var(--light); background: var(--gray); font-size: 9px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .btn:active { border-style: inset; }
+  .btn.yel { background: #ffff00; } .btn.pnk { background: #ffccff; } .btn.blk { background: #000; color: #0f0; font-family: monospace; }
 
-        .workspace {
-            display: grid;
-            grid-template-rows: 40% 60%;
-        }
+  /* Bottom Bar */
+  #dbar { grid-area: d; background: var(--gray); border-top: 2px outset var(--light); padding: 2px; display: flex; align-items: center; }
+  #dbar.input-mode { background: #ffff00; }
+  #dbar-in { width: 100%; background: var(--light); border: 2px inset; font-family: monospace; display: none; }
+  #dbar.input-mode #dbar-in { display: block; }
 
-        .script-pane {
-            background: white;
-            border: 1px solid #999;
-            margin: 2px;
-            padding: 8px;
-            font-family: var(--font-mono);
-            overflow-y: auto;
-        }
-
-        .highlight-green { background: green; color: white; font-weight: bold; padding: 0 4px; }
-        .highlight-red { background: #a00; color: white; font-weight: bold; padding: 0 4px; }
-
-        .split-pane {
-            display: grid;
-            grid-template-columns: 1fr 1.5fr;
-            gap: 4px;
-            margin: 0 2px 2px 2px;
-        }
-        .left-log { background: #fdfdfd; border: 2px solid #ccc; border-style: inset; }
-        .right-form {
-            border: 2px solid #ccc; border-style: inset;
-            display: flex; flex-direction: column;
-        }
-
-        .info-strip {
-            background: linear-gradient(#e0e0e0, #c0c0c0);
-            text-align: center;
-            font-size: 11px;
-            padding: 2px;
-            border-bottom: 1px solid #999;
-        }
-        .form-body { padding: 10px; overflow-y: auto; flex: 1; }
-        .form-row { display: flex; align-items: center; margin-bottom: 8px; gap: 8px; }
-        .lbl-blue-bg {
-            background: blue; color: white;
-            font-weight: bold; padding: 2px 6px;
-            min-width: 100px;
-        }
-        select, input[type="text"], input[type="email"], input[type="tel"] {
-            flex: 1; max-width: 250px;
-            background: #ffffd0; border: 1px solid #888; padding: 2px 4px;
-        }
-        .form-btn {
-            background: linear-gradient(#fff, #ddd);
-            border: 1px solid #888;
-            padding: 4px 12px;
-            cursor: pointer;
-        }
-        .form-btn:active { transform: translateY(1px); }
-
-        .sidebar {
-            background: #e8e8e8;
-            padding: 2px;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            border-left: 1px solid #999;
-            grid-row: 1 / -1;
-            grid-column: 2;
-        }
-        .side-btn {
-            background: linear-gradient(to bottom, #fff, #dcdcdc 50%, #d0d0d0 51%, #e0e0e0);
-            border: 1px solid #707070;
-            border-radius: 4px;
-            text-align: center;
-            font-size: 10px;
-            padding: 4px 0;
-            cursor: pointer;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        }
-        .side-btn:active { transform: translateY(1px); }
-        .side-btn.yellow { background: linear-gradient(to bottom, #ffffd0, #e0e080); }
-        .side-btn.pink { background: linear-gradient(to bottom, #fce0e0, #e0b0b0); }
-        .side-btn.active { background: #4a90d9; color: white; }
-
-        .footer {
-            height: 60px;
-            background: #f0f0f0;
-            border-top: 1px solid #999;
-            display: flex;
-            gap: 10px;
-            padding: 5px;
-            align-items: flex-end;
-        }
-        .footer-mod {
-            height: 30px; width: 50px;
-            background: linear-gradient(to bottom, #555, #222);
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-            border: 1px solid white;
-        }
-
-        /* Bottom Bar */
-        .bottom-bar {
-            height: 22px;
-            background: linear-gradient(#d0d0d0, #b0b0b0);
-            border-top: 1px solid #888;
-            display: flex;
-            align-items: center;
-            padding: 0 8px;
-            font-size: 11px;
-            gap: 20px;
-        }
-        .bottom-bar-section {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .bottom-bar-input {
-            background: #ffffd0;
-            border: 1px solid #666;
-            padding: 1px 4px;
-            font-family: var(--font-mono);
-            width: 120px;
-        }
-
-        /* Account Menu Overlay */
-        .account-menu {
-            position: fixed;
-            right: 70px;
-            top: 80px;
-            background: #f0f0f0;
-            border: 2px outset #ccc;
-            display: none;
-            flex-direction: column;
-            min-width: 200px;
-            max-height: 400px;
-            overflow-y: auto;
-            z-index: 100;
-            box-shadow: 3px 3px 8px rgba(0,0,0,0.3);
-        }
-        .account-menu.visible { display: flex; }
-        .account-tab {
-            padding: 6px 12px;
-            border-bottom: 1px solid #ccc;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .account-tab:hover { background: #0078d7; color: white; }
-        .account-tab.active { background: #005a9e; color: white; }
-
-        /* SIC: Sequential Input Control */
-        .seq-locked {
-            pointer-events: none; /* Disables clicking */
-            background-color: #e8e8e8 !important; /* Visual cue for locked state */
-            color: #888;
-        }
-
-        /* Lock Mode */
-        body.locked .workspace,
-        body.locked .sidebar,
-        body.locked .footer { opacity: 0.6; pointer-events: none; }
-        body.locked .bottom-bar { opacity: 1; pointer-events: auto; }
-        body.locked .bottom-bar-input { background: #ffff80; }
-
-        /* No Account State */
-        .no-account-msg {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #666;
-            font-style: italic;
-        }
-    </style>
+  /* Popups */
+  #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; align-items: center; justify-content: center; }
+  .popup { background: var(--gray); border: 2px outset var(--light); width: 350px; display: flex; flex-direction: column; box-shadow: 4px 4px 0 rgba(0,0,0,0.5); }
+  .pop-h { background: var(--navy); color: var(--light); padding: 4px; font-weight: bold; display: flex; justify-content: space-between; }
+  .pop-b { padding: 8px; max-height: 400px; overflow-y: auto; }
+  .pop-item { padding: 4px; border-bottom: 1px dotted var(--dark); cursor: pointer; }
+  .pop-item:hover, .pop-item.sel { background: var(--navy); color: var(--light); }
+  .pop-act { display: flex; gap: 5px; padding: 4px; justify-content: center; border-top: 2px groove var(--light); }
+</style>
 </head>
 <body>
-    <div id="root"></div>
 
-    <script>
-    /**
-     * AXIOMATIC CORE - Extended
-     */
-    class Component {
-        constructor(tag = 'div', className = '') {
-            this.el = document.createElement(tag);
-            if (className) this.el.className = className;
-        }
-        css(styles) { Object.assign(this.el.style, styles); return this; }
-        text(str) { this.el.innerText = str; return this; }
-        html(str) { this.el.innerHTML = str; return this; }
-        attr(k, v) { this.el.setAttribute(k, v); return this; }
-        child(c) { this.el.appendChild(c instanceof Component ? c.el : c); return this; }
-        clear() { this.el.innerHTML = ''; return this; }
-        on(evt, fn) { this.el.addEventListener(evt, fn); return this; }
-        toggle(cls, force) { this.el.classList.toggle(cls, force); return this; }
-        mount(p) { (typeof p === 'string' ? document.querySelector(p) : p).appendChild(this.el); return this; }
+<div class="app win-out">
+  <header id="header" class="win-out">
+    <div id="acct-name">SELECT ACCOUNT</div>
+    <div id="clock">12:00:00</div>
+    <div class="tab">DEL: 0</div>
+    <div class="tab">PROG: 0</div>
+    <div class="tab" style="margin-left: auto" id="acct-id-disp">ID: ----</div>
+  </header>
+
+  <main id="main">
+    <section id="script" class="win-in"></section>
+    <section id="disclaimer" class="win-in"></section>
+    <section id="form" class="win-in"></section>
+    <section id="oncall" class="win-in"></section>
+    <section id="info" class="win-in"></section>
+  </main>
+
+  <aside id="sidebar" class="win-out"></aside>
+  
+  <footer id="dbar">
+    <input type="text" id="dbar-in" placeholder="ENTER ACCOUNT ID...">
+  </footer>
+</div>
+
+<div id="overlay"></div>
+
+<script>
+/**
+ * SPECTRUM FAKE - AXIOMATIC ARCHITECTURE
+ * 1. State: Reactive proxy.
+ * 2. Schema: Defines behavior.
+ * 3. Component: Morphs based on schema.
+ */
+
+// --- 1. CORE & STATE ---
+const EventBus = new EventTarget();
+const State = new Proxy({
+  account: null,     // Current Schema
+  form: { step: 0, field: 0, values: {} }, 
+  popup: null,       // { type, data }
+  mode: 'IDLE',      // 'IDLE' | 'INPUT'
+  editingId: null    // If editing a message
+}, {
+  set(target, key, value) {
+    target[key] = value;
+    EventBus.dispatchEvent(new CustomEvent(`state:${key}`, { detail: value }));
+    return true;
+  }
+});
+
+// --- 2. STORAGE & DATA ---
+const DB = {
+  accounts: {
+    '2000': {
+      id: '2000', name: 'Training Account 6-7',
+      script: [
+        { text: 'TRAINING ACCOUNT - APPOINTMENT SCHEDULING', style: 'normal' },
+        { text: '✓ Verify caller identity', style: 'good' },
+        { text: '✓ Confirm appointment location', style: 'good' },
+        { text: '⚠ DO NOT provide pricing info', style: 'warn' }
+      ],
+      disclaimer: 'IFS DISCLAIMER: This is a simulation. Do not enter real PII.',
+      form: {
+        hint: 'Tab to navigate. Shift+Enter to submit.',
+        steps: [
+          [
+            { id: 'loc', type: 'dropdown', label: 'Location', opts: ['New York', 'Chicago', 'LA'], default: 'New York' },
+            { id: 'name', type: 'text', label: 'Caller Name', req: true }
+          ],
+          [
+            { id: 'phone', type: 'phone', label: 'Phone', req: true },
+            { id: 'type', type: 'dropdown', label: 'Appt Type', opts: ['Install', 'Repair', 'Query'] }
+          ],
+          [
+            { id: 'notes', type: 'textarea', label: 'Notes' }
+          ]
+        ]
+      },
+      oncalls: [
+        { label: 'Day Mgr', name: 'John Smith', times: '9-5 EST', dial: '555-0101', note: 'Escalations' },
+        { label: 'Night Sup', name: 'Jane Doe', times: '5-12 EST', dial: '555-0102', note: 'Emergencies' },
+        { label: 'Tech', name: 'Bob Root', times: '24/7', dial: '555-0000' }
+      ],
+      info: [
+        'PAGE 1: GENERAL\n\nWelcome to training.\nUse PageUp/PageDown to navigate info pages.',
+        'PAGE 2: POLICIES\n\n1. Be polite.\n2. Be efficient.\n3. Be retro.',
+        'PAGE 3: CODES\n\nRed: Urgent\nBlue: Standard\nYellow: Hold'
+      ]
+    },
+    '3000': { id: '3000', name: 'Pizza Palace', script: [{text:'Pizza Order Line'}], form: {steps: [[{id:'t', type:'text', label:'Topping'}]]}, oncalls: [], info: ['Pizza menu...'] },
+    '5500': { id: '5500', name: 'Emergency Svcs', script: [{text:'URGENT LINE', style:'warn'}], form: {steps: [[{id:'x', type:'text', label:'Location'}]]}, oncalls: [], info: ['Protocols...'] }
+  },
+  saveMsg(acctId, data, idToUpdate = null) {
+    const key = `msgs_${acctId}`;
+    let msgs = JSON.parse(localStorage.getItem(key) || '[]');
+    if (idToUpdate) {
+      const idx = msgs.findIndex(m => m.id === idToUpdate);
+      if (idx > -1) msgs[idx] = { ...msgs[idx], data, updated: new Date() };
+    } else {
+      msgs.push({ id: crypto.randomUUID(), data, created: new Date() });
     }
+    localStorage.setItem(key, JSON.stringify(msgs));
+  },
+  getMsgs(acctId) { return JSON.parse(localStorage.getItem(`msgs_${acctId}`) || '[]'); }
+};
 
-    /**
-     * REACTIVE STATE
-     */
-    const State = {
-        _data: { account: null, mode: 'normal', input: '' },
-        _subs: new Set(),
-        get(k) { return this._data[k]; },
-        set(k, v) { 
-            this._data[k] = v; 
-            if (k === 'mode') document.body.classList.toggle('locked', v === 'display');
-            this._subs.forEach(fn => fn(k, v)); 
-        },
-        sub(fn) { this._subs.add(fn); return () => this._subs.delete(fn); }
-    };
+// --- 3. COMPONENTS ---
+class Component {
+  constructor(id) { this.el = document.getElementById(id); this.schema = null; }
+  configure(s) { this.schema = s; this.render(); return this; }
+  render() { this.el.innerHTML = ''; }
+  handleKey(e) {}
+}
 
-    /**
-     * ACCOUNT REGISTRY - Accounts register themselves here
-     */
-    const Accounts = {
-        list: {},
-        register(id, config) { 
-            this.list[id] = { id, ...config }; 
-        },
-        get(id) { return this.list[id]; },
-        all() { return Object.values(this.list); },
-        find(query) {
-            const q = query.toLowerCase();
-            return this.all().filter(a => 
-                a.id.includes(q) || a.name.toLowerCase().includes(q)
-            );
+class Script extends Component {
+  render() {
+    this.el.innerHTML = !this.schema ? '<div style="color:#888; padding:10px">SELECT AN ACCOUNT</div>' : 
+      this.schema.map(b => `<div class="${b.style === 'good' ? 'sc-good' : b.style === 'warn' ? 'sc-warn' : ''}">${b.text}</div>`).join('');
+  }
+}
+
+class Info extends Component {
+  constructor(id) { super(id); this.page = 0; }
+  configure(s) { this.page = 0; return super.configure(s || []); }
+  render() {
+    if (!this.schema.length) { this.el.innerHTML = ''; return; }
+    this.el.innerHTML = `<div id="info-content">${this.schema[this.page]}</div><div id="info-pg">Page ${this.page+1}/${this.schema.length}</div>`;
+    this.resize();
+  }
+  resize() {
+    const c = this.el.querySelector('#info-content');
+    let s = 14; c.style.fontSize = s + 'px';
+    while (c.scrollHeight > this.el.clientHeight - 20 && s > 8) { c.style.fontSize = (--s) + 'px'; }
+  }
+  handleKey(e) {
+    if (e.key === 'PageDown' && this.page < this.schema.length - 1) { this.page++; this.render(); }
+    if (e.key === 'PageUp' && this.page > 0) { this.page--; this.render(); }
+  }
+}
+
+class Oncall extends Component {
+  constructor(id) { super(id); this.sel = -1; }
+  configure(s) { this.sel = -1; return super.configure(s || []); }
+  render() {
+    this.el.innerHTML = this.schema.map((o, i) => `
+      <div class="oc-row ${i === this.sel ? 'sel' : ''}" data-i="${i}">
+        <div class="oc-lbl"><b>${o.label}</b></div><div class="oc-nm" style="text-align:right">${o.name}</div>
+        <div class="oc-sub">${o.times}</div>
+      </div>`).join('');
+    this.el.querySelectorAll('.oc-row').forEach(r => r.onclick = () => {
+      this.sel = +r.dataset.i; this.render(); this.open();
+    });
+  }
+  handleKey(e) {
+    if (!this.schema.length) return;
+    if (e.key === 'ArrowDown') { this.sel = Math.min(this.sel + 1, this.schema.length - 1); this.render(); this.el.children[this.sel]?.scrollIntoView(false); }
+    if (e.key === 'ArrowUp') { this.sel = Math.max(this.sel - 1, 0); this.render(); this.el.children[this.sel]?.scrollIntoView(false); }
+    if (e.key === 'Enter' && this.sel > -1) this.open();
+  }
+  open() { State.popup = { type: 'oncall', data: this.schema[this.sel] }; }
+}
+
+class Form extends Component {
+  configure(s) {
+    this.schema = s || { steps: [] }; 
+    this.fields = []; // Flattened list of field instances
+    this.el.innerHTML = '';
+    if (!s) return this;
+    
+    // Header
+    if (s.hint) this.el.innerHTML += `<div class="form-hint">${s.hint}</div>`;
+    
+    // Steps
+    s.steps.forEach((stepFields, stepIdx) => {
+      const stepDiv = document.createElement('div');
+      stepDiv.className = `step step-${stepIdx}`;
+      stepFields.forEach((fSchema) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'field';
+        // Factory for input types
+        let inputHtml = '';
+        if (fSchema.type === 'dropdown') {
+          inputHtml = `<div class="dd-wrap"><div class="dd-disp"><span>${fSchema.default || 'Select...'}</span><span>▼</span></div><div class="dd-list">${fSchema.opts.map(o=>`<div class="dd-opt">${o}</div>`).join('')}</div></div>`;
+        } else if (fSchema.type === 'textarea') {
+          inputHtml = `<textarea rows="3"></textarea>`;
+        } else {
+          inputHtml = `<input type="${fSchema.type === 'phone' ? 'tel' : 'text'}" value="${fSchema.default||''}">`;
         }
-    };
+        wrap.innerHTML = `<label class="label">${fSchema.label}</label>${inputHtml}`;
+        wrap.schema = fSchema; // Bind schema to DOM
+        stepDiv.appendChild(wrap);
+        this.fields.push({ el: wrap, step: stepIdx, type: fSchema.type, val: fSchema.default || '' });
+      });
+      this.el.appendChild(stepDiv);
+    });
+    
+    this.el.innerHTML += `<div class="submit-bar">ENTER OR TAB TO FILE</div>`;
+    this.sync();
+    return this;
+  }
+  
+  sync() {
+    const { step, field } = State.form;
+    const isLast = step === this.schema.steps.length - 1 && field === this.schema.steps[step].length - 1;
+    
+    // Manage Steps visibility
+    this.el.querySelectorAll('.step').forEach((s, i) => s.classList.toggle('active', i <= step));
+    this.el.querySelector('.submit-bar').style.display = isLast ? 'block' : 'none';
 
-    /**
-     * FORM BUILDER - Creates form from config
-     */
-    const FormBuilder = {
-        build(fields, account) {
-            const form = new Component('div', 'form-body');
-            (fields || []).forEach(f => {
-                const row = new Component('div', 'form-row');
-                if (f.label) row.child(new Component('span', 'lbl-blue-bg').text(f.label));
-                
-                const ctrl = this.createControl(f, account);
-                if (ctrl) row.child(ctrl);
-                form.child(row);
-            });
-            return form;
-        },
-        createControl(f, account) {
-            switch(f.type) {
-                case 'select':
-                    const sel = new Component('select');
-                    sel.child(new Component('option').text(''));
-                    (f.options || []).forEach(o => sel.child(new Component('option').text(o)));
-                    return sel;
-                case 'text': case 'email': case 'tel':
-                    return new Component('input').attr('type', f.type).attr('placeholder', f.placeholder || '');
-                case 'button':
-                    return new Component('button', 'form-btn').text(f.text)
-                        .on('click', () => f.action?.(account));
-                case 'label':
-                    return new Component('span').text(f.value || '');
-                default:
-                    return new Component('input').attr('type', 'text');
-            }
-        },
-        enforceSequentialFlow(root) {
-            const inputs = Array.from(root.el.querySelectorAll('input, select, button'));
-            if (!inputs.length) return;
-
-            let insertMode = false;
-
-            inputs.forEach((inp, i) => {
-                if (i > 0) inp.classList.add('seq-locked');
-            });
-
-            setTimeout(() => { 
-                inputs[0].focus(); 
-                if (inputs[0].tagName === 'INPUT') inputs[0].select(); 
-            }, 0);
-
-            root.on('keydown', e => {
-                const current = e.target;
-                const idx = inputs.indexOf(current);
-                if (idx === -1) return;
-
-                if (e.key === 'Tab') {
-                    e.preventDefault();
-                    const dir = e.shiftKey ? -1 : 1;
-                    const nextIdx = idx + dir;
-
-                    if (nextIdx >= 0 && nextIdx < inputs.length) {
-                        const next = inputs[nextIdx];
-                        insertMode = false; // Reset on navigation
-                        current.classList.add('seq-locked');
-                        next.classList.remove('seq-locked');
-                        next.focus();
-                        if (next.tagName === 'INPUT') next.select();
-                    }
-                }
-
-                if (e.key === 'Insert') {
-                    e.preventDefault();
-                    insertMode = !insertMode;
-                    if (!insertMode && current.tagName === 'INPUT') {
-                        current.select();
-                    } else if (insertMode && current.tagName === 'INPUT') {
-                        current.selectionStart = current.selectionEnd = current.value.length;
-                    }
-                }
-            });
-
-            // Block mouse-driven cursor placement
-            const blockSelection = (e) => {
-                if (!insertMode && e.target.tagName === 'INPUT') {
-                    e.preventDefault();
-                    e.target.select();
-                }
-            };
-
-            root.on('mousedown', blockSelection);
-            root.on('mouseup', blockSelection);
-            root.on('click', blockSelection);
-            
-            root.on('focusin', e => {
-                if (!insertMode && e.target.tagName === 'INPUT') {
-                    e.target.select();
-                }
-            });
-
-            // Prevent arrow keys/home/end unless in insert mode
-            root.on('keydown', e => {
-                if (!insertMode && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {
-                    if (e.target.tagName === 'INPUT') e.preventDefault();
-                }
-            }, true);
-        }
-    };
-
-    /**
-     * UI COMPONENTS
-     */
-    class Sidebar extends Component {
-        constructor(app) {
-            super('div', 'sidebar');
-            this.app = app;
-            this.render();
-        }
-        render() {
-            const buttons = [
-                'System', 'Queues', 'Accounts', 'Subs', 'Contacts',
-                'History', 'Browser', 'Undelivr', 'Loc/IF', 'Remind',
-                'Alert', 'Start', 'Stop', 'Dial', 'Park',
-                'Patch', 'Hold', 'PriHold', 'Transfer', 'Clear',
-                'Stats', 'On/Off'
-            ];
-            buttons.forEach(lbl => {
-                const btn = new Component('div', 'side-btn').text(lbl);
-                if (['Hold', 'PriHold', 'Transfer', 'Clear'].includes(lbl)) btn.el.classList.add('yellow');
-                if (['Park', 'Patch'].includes(lbl)) btn.el.classList.add('pink');
-                if (lbl === 'Accounts') btn.on('click', () => this.app.toggleAccountMenu());
-                this.child(btn);
-            });
-            this.child(new Component('div', 'side-btn').css({background:'black',color:'#0f0',marginTop:'auto'}).text('PAGE'));
-        }
-    }
-
-    class Header extends Component {
-        constructor() {
-            super('div', 'col');
-            this.topStrip = new Component('div', 'header-strip flex');
-            this.accountLabel = new Component('span', 'red-text').text('NO ACCOUNT SELECTED');
-            this.timeLabel = new Component('span', 'red-text').text(this.getTime());
-            this.topStrip.child(this.accountLabel).child(this.timeLabel);
-
-            this.statusBar = new Component('div', 'status-bar');
-            this.infoTab = new Component('div', 'status-tab info').text('Select an account');
-            
-            [{ t: 'No Undelivered' }, { t: '0 Delivered' }, { t: '0 In Progress', c: 'active' }]
-                .forEach(item => this.statusBar.child(new Component('div', `status-tab ${item.c||''}`).text(item.t)));
-            this.statusBar.child(this.infoTab);
-
-            this.child(this.topStrip).child(this.statusBar);
-            State.sub((k) => k === 'account' && this.update());
-            setInterval(() => this.timeLabel.text(this.getTime()), 1000);
-        }
-        getTime() {
-            const d = new Date();
-            const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-            return `${days[d.getDay()]} ${d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}).toLowerCase()} Eastern`;
-        }
-        update() {
-            const acc = Accounts.get(State.get('account'));
-            this.accountLabel.text(acc ? acc.name.toUpperCase() : 'NO ACCOUNT SELECTED');
-            this.infoTab.text(acc ? `${acc.id} | ${acc.name}` : 'Select an account');
-        }
-    }
-
-    class ScriptPanel extends Component {
-        constructor() {
-            super('div', 'script-pane');
-            this.html('<div class="no-account-msg">Select an account to view script</div>');
-            State.sub((k) => k === 'account' && this.update());
-        }
-        update() {
-            const acc = Accounts.get(State.get('account'));
-            this.html(acc?.script || '<div class="no-account-msg">No script available</div>');
-        }
-    }
-
-    class ActionPanel extends Component {
-        constructor() {
-            super('div', 'right-form bg-teal');
-            this.infoStrip = new Component('div', 'info-strip').text('No account selected');
-            this.formContainer = new Component('div', 'form-body')
-                .child(new Component('div', 'no-account-msg').text('Select an account'));
-            this.child(this.infoStrip).child(this.formContainer);
-            State.sub((k) => k === 'account' && this.update());
-        }
-        update() {
-            const acc = Accounts.get(State.get('account'));
-            this.infoStrip.text(acc?.info || 'No instructions');
-            this.formContainer.clear();
-            if (acc?.fields) {
-                const form = FormBuilder.build(acc.fields, acc);
-                
-                // Apply the sequential logic to the newly built form
-                FormBuilder.enforceSequentialFlow(form);
-                
-                this.formContainer.el.appendChild(form.el);
-            } else {
-                this.formContainer.child(new Component('div','no-account-msg').text('No form configured'));
-            }
-        }
-    }
-
-    class AccountMenu extends Component {
-        constructor() {
-            super('div', 'account-menu');
-            State.sub(() => this.render());
-        }
-        render() {
-            this.clear();
-            Accounts.all().forEach(acc => {
-                this.child(new Component('div', `account-tab${State.get('account')===acc.id?' active':''}`)
-                    .text(`${acc.id} - ${acc.name}`)
-                    .on('click', () => {
-                        State.set('account', acc.id);
-                        this.hide();
-                    }));
-            });
-        }
-        show() { this.el.classList.add('visible'); this.render(); }
-        hide() { this.el.classList.remove('visible'); }
-        toggle() { this.el.classList.toggle('visible'); if(this.el.classList.contains('visible')) this.render(); }
-    }
-
-    class BottomBar extends Component {
-        constructor() {
-            super('div', 'bottom-bar');
-            this.modeLabel = new Component('span').text('Ready');
-            this.inputField = new Component('input', 'bottom-bar-input')
-                .attr('type', 'text')
-                .attr('placeholder', 'Account #')
-                .attr('readonly', 'true');
-            
-            this.child(new Component('div', 'bottom-bar-section').child(this.modeLabel))
-                .child(new Component('div', 'bottom-bar-section').child(this.inputField));
-            
-            State.sub(() => this.update());
-        }
-        update() {
-            const mode = State.get('mode');
-            const acc = Accounts.get(State.get('account'));
-            if (mode === 'display') {
-                this.modeLabel.text('Display:');
-                this.inputField.el.value = State.get('input');
-                this.inputField.el.removeAttribute('readonly');
-                this.inputField.el.focus();
-            } else {
-                this.modeLabel.text(acc ? 'Account:' : 'Ready');
-                this.inputField.el.value = acc ? `${acc.id} - ${acc.name}` : '';
-                this.inputField.attr('readonly', 'true');
-            }
-        }
-    }
-
-    class Footer extends Component {
-        constructor() {
-            super('div', 'footer');
-            for(let i = 0; i < 4; i++) this.child(new Component('div', 'footer-mod'));
-            this.child(new Component('div').css({width:'20px'}));
-            for(let i = 0; i < 2; i++) this.child(new Component('div', 'footer-mod'));
-        }
-    }
-
-    /**
-     * APP - Main Controller
-     */
-    class App {
-        static instance;
+    // Manage Fields state
+    let globalIdx = 0;
+    this.schema.steps.forEach((sFields, sIdx) => {
+      sFields.forEach((_, fIdx) => {
+        const fWrapper = this.fields[globalIdx].el;
+        const isActive = sIdx === step && fIdx === field;
+        const isPast = sIdx < step || (sIdx === step && fIdx < field);
         
-        static init() {
-            App.instance = new App();
-            App.instance.build();
-            App.instance.bindKeys();
+        fWrapper.classList.toggle('active', isActive);
+        fWrapper.classList.toggle('locked', isPast);
+        
+        const inp = fWrapper.querySelector('input, textarea, .dd-disp');
+        if (isActive) inp.focus();
+        
+        // Update values from DOM to memory (reactive binding helper)
+        if (fWrapper.querySelector('input, textarea')) {
+           this.fields[globalIdx].val = fWrapper.querySelector('input, textarea').value;
+        } else {
+           fWrapper.querySelector('.dd-disp span').innerText = this.fields[globalIdx].val || 'Select...';
         }
+        globalIdx++;
+      });
+    });
+  }
 
-        build() {
-            const root = document.getElementById('root');
-            const main = new Component('div', 'app-window');
-            const content = new Component('div', 'col grow');
+  handleKey(e) {
+    if (!this.schema) return;
+    const { step, field } = State.form;
+    const currentStepFields = this.schema.steps[step];
+    
+    // Find current field implementation
+    let flatIdx = 0;
+    for(let i=0; i<step; i++) flatIdx += this.schema.steps[i].length;
+    flatIdx += field;
+    const fieldObj = this.fields[flatIdx];
 
-            content.child(new Header());
-            
-            const workspace = new Component('div', 'workspace grow');
-            workspace.child(new ScriptPanel());
-            
-            const split = new Component('div', 'split-pane grow');
-            split.child(new Component('div', 'left-log'));
-            split.child(new ActionPanel());
-            workspace.child(split);
-            content.child(workspace);
-            
-            content.child(new Footer());
-            content.child(new BottomBar());
+    // Dropdown Logic
+    if (fieldObj.type === 'dropdown') {
+      const list = fieldObj.el.querySelector('.dd-list');
+      const isOpen = list.style.display === 'block';
+      const opts = fieldObj.el.schema.opts;
+      let idx = opts.indexOf(fieldObj.val);
 
-            this.accountMenu = new AccountMenu();
-            
-            main.child(content).child(new Sidebar(this)).mount(root);
-            this.accountMenu.mount(document.body);
-        }
-
-        toggleAccountMenu() { this.accountMenu.toggle(); }
-
-        bindKeys() {
-            document.addEventListener('keydown', e => {
-                const mode = State.get('mode');
-                
-                // + key enters display mode (numpad or shift+=)
-                if ((e.key === '+' || (e.key === '=' && e.shiftKey)) && mode === 'normal') {
-                    e.preventDefault();
-                    State.set('input', '');
-                    State.set('mode', 'display');
-                    return;
-                }
-                
-                // Grave/Tilde exits display mode
-                if (e.key === '`' || e.key === '~' || (e.key === 'Escape' && mode === 'display')) {
-                    State.set('mode', 'normal');
-                    return;
-                }
-
-                // In display mode, capture number input
-                if (mode === 'display') {
-                    if (/^[0-9.]$/.test(e.key)) {
-                        State.set('input', State.get('input') + e.key);
-                    } else if (e.key === 'Backspace') {
-                        State.set('input', State.get('input').slice(0, -1));
-                    } else if (e.key === 'Enter') {
-                        const input = State.get('input');
-                        const acc = Accounts.get(input) || Accounts.find(input)[0];
-                        if (acc) State.set('account', acc.id);
-                        State.set('mode', 'normal');
-                    }
-                    e.preventDefault();
-                }
-            });
-        }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (!isOpen) { list.style.display = 'block'; }
+        else if (idx < opts.length - 1) { fieldObj.val = opts[idx+1]; this.sync(); }
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (idx > 0) { fieldObj.val = opts[idx-1]; this.sync(); }
+        return;
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (isOpen) { list.style.display = 'none'; return; }
+        // Fallthrough to navigate
+      }
     }
 
-    // ========================================
-    // ACCOUNT DEFINITIONS (Separate files in production)
-    // ========================================
+    // Navigation
+    if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey)) {
+      e.preventDefault();
+      if (e.shiftKey) { // Back
+        if (field > 0) State.form = { ...State.form, field: field - 1 };
+        else if (step > 0) State.form = { ...State.form, step: step - 1, field: this.schema.steps[step-1].length - 1 };
+      } else { // Fwd
+        if (field < currentStepFields.length - 1) State.form = { ...State.form, field: field + 1 };
+        else if (step < this.schema.steps.length - 1) State.form = { ...State.form, step: step + 1, field: 0 };
+      }
+      this.sync();
+    }
+    
+    // Submit
+    if (e.key === 'Enter' && e.shiftKey) {
+      const isLast = step === this.schema.steps.length - 1 && field === currentStepFields.length - 1;
+      if (isLast) {
+        const data = {};
+        this.fields.forEach(f => data[f.el.schema.id] = f.val);
+        DB.saveMsg(State.account.id, data, State.editingId);
+        State.editingId = null;
+        State.form = { step: 0, field: 0 }; // Reset
+        this.configure(this.schema); // Re-render clean
+        alert('FILED TO DATABASE');
+      }
+    }
+  }
 
-    // Account: 2000 - Training Account
-    Accounts.register('2000', {
-        name: 'Training Account 6-7',
-        info: 'Instructions cleared on 13-JAN-26 04:38 PM NPC',
-        script: `
-            <span class="highlight-green">Scheduling call handling</span>
-            <span class="highlight-red" style="margin-left: 50px;">We make appts</span>
-            <br><br>
-            <span style="color: teal; font-weight: bold;">• Scheduling link</span>
-            <br><br>
-            1. Ask if they want East or West. If East, ask if they want Willoughby or Beachwood. If West, choose Brookpark.<br><br>
-            2. Complete web form and message to include patient and appt details
-            <div style="margin-top: 10px;">
-                <span class="highlight-red">Must have email to schedule appt</span>
-                if refused, enter refused@yahoo.com.
-                <span style="float:right; font-weight:bold;">DONT REFUSE</span>
-            </div>
-        `,
-        fields: [
-            { type: 'select', label: 'Type of call:', options: ['New Patient', 'Existing Patient', 'Reschedule', 'Cancel'] },
-            { type: 'select', label: 'Location:', options: ['East - Willoughby', 'East - Beachwood', 'West - Brookpark'] },
-            { type: 'text', label: 'Patient Name:' },
-            { type: 'email', label: 'Email:' },
-            { type: 'tel', label: 'Phone:' },
-            { type: 'button', text: 'Submit Appointment', action: (acc) => alert(`Submitted for ${acc.name}`) }
-        ]
+  fill(data) {
+    this.fields.forEach(f => {
+      if (data[f.el.schema.id]) f.val = data[f.el.schema.id];
     });
+    this.sync();
+  }
+}
 
-    // Account: 3000 - Customer Service
-    Accounts.register('3000', {
-        name: 'Acme Customer Service',
-        info: 'Updated 01-FEB-26 - New return policy',
-        script: `
-            <span class="highlight-green">Customer Service Protocol</span>
-            <br><br>
-            <b>Greeting:</b> "Thank you for calling Acme, how may I help you?"
-            <br><br>
-            <span style="color: teal; font-weight: bold;">• Order Status</span> - Get order # and lookup<br>
-            <span style="color: teal; font-weight: bold;">• Returns</span> - 30 day policy, must have receipt<br>
-            <span style="color: teal; font-weight: bold;">• Complaints</span> - Escalate to supervisor
-        `,
-        fields: [
-            { type: 'select', label: 'Call Type:', options: ['Order Status', 'Returns', 'Complaint', 'General Inquiry'] },
-            { type: 'text', label: 'Order #:' },
-            { type: 'text', label: 'Customer Name:' },
-            { type: 'button', text: 'Lookup Order', action: () => alert('Looking up order...') },
-            { type: 'button', text: 'Escalate', action: () => alert('Escalating to supervisor...') }
-        ]
+class Popup extends Component {
+  constructor(id) { super(id); this.sel = 0; }
+  render() {
+    this.el.style.display = State.popup ? 'flex' : 'none';
+    if (!State.popup) return;
+    
+    const { type, data } = State.popup;
+    let title = '', body = '', acts = '';
+    this.list = null; // for navigation
+
+    if (type === 'accounts') {
+      title = 'SELECT ACCOUNT';
+      this.list = Object.values(DB.accounts);
+      body = this.list.map((a, i) => `<div class="pop-item ${i===this.sel?'sel':''}" data-i="${i}">${a.id} - ${a.name}</div>`).join('');
+    } else if (type === 'messages') {
+      title = 'HISTORY';
+      this.list = data;
+      body = data.length ? data.map((m, i) => `<div class="pop-item ${i===this.sel?'sel':''}" data-i="${i}">${m.created.slice(0,10)} - ${JSON.stringify(m.data).slice(0,30)}...</div>`).join('') : '<div style="padding:10px">No messages found.</div>';
+    } else if (type === 'oncall') {
+      title = 'CONTACT DETAIL';
+      body = `<div style="padding:10px"><b>${data.name}</b><br>${data.label}<br>${data.times}<br><br><i>${data.note||''}</i></div>`;
+      acts = `<button onclick="actions.pmd()">PMD</button><button onclick="actions.dial('${data.dial}')">DIAL</button>`;
+    } else if (type === 'dial') {
+      title = 'DIALING...';
+      body = `<div style="font-size:24px; font-family:monospace; text-align:center; padding:20px; color:lime; background:black">${data}</div>`;
+      acts = `<button onclick="State.popup=null">HANG UP</button>`;
+    } else if (type === 'msg_detail') {
+      title = 'MESSAGE VIEW';
+      body = `<div style="padding:10px"><pre>${JSON.stringify(data.data, null, 2)}</pre></div>`;
+    }
+
+    this.el.innerHTML = `
+      <div class="popup">
+        <div class="pop-h"><span>${title}</span><span style="cursor:pointer" onclick="State.popup=null">X</span></div>
+        <div class="pop-b">${body}</div>
+        ${acts ? `<div class="pop-act">${acts}</div>` : ''}
+      </div>`;
+    
+    // Bind click
+    this.el.querySelectorAll('.pop-item').forEach(el => {
+      el.onclick = () => this.select(+el.dataset.i);
     });
+  }
 
-    // Account: 5500 - Tech Support
-    Accounts.register('5500', {
-        name: 'TechCorp Support Line',
-        info: 'Priority support - VIP clients',
-        script: `
-            <span class="highlight-green">Technical Support</span>
-            <span class="highlight-red" style="margin-left: 30px;">VIP ACCOUNT</span>
-            <br><br>
-            <b>Step 1:</b> Verify customer identity (last 4 SSN + DOB)<br>
-            <b>Step 2:</b> Document issue in detail<br>
-            <b>Step 3:</b> Attempt basic troubleshooting<br>
-            <b>Step 4:</b> If unresolved, create ticket and escalate
-            <br><br>
-            <span class="highlight-red">DO NOT PROMISE RESOLUTION TIME</span>
-        `,
-        fields: [
-            { type: 'text', label: 'Customer ID:' },
-            { type: 'select', label: 'Issue Type:', options: ['Software', 'Hardware', 'Network', 'Account'] },
-            { type: 'select', label: 'Severity:', options: ['Low', 'Medium', 'High', 'Critical'] },
-            { type: 'text', label: 'Description:' },
-            { type: 'button', text: 'Create Ticket', action: () => alert('Ticket created!') }
-        ]
-    });
+  select(idx) {
+    const { type } = State.popup;
+    if (type === 'accounts') {
+      actions.loadAccount(this.list[idx].id);
+    } else if (type === 'messages') {
+      State.popup = { type: 'msg_detail', data: this.list[idx] }; // Drill down
+    }
+  }
 
-    // Boot
-    App.init();
-    </script>
+  handleKey(e) {
+    if (!State.popup) return;
+    if (e.key === 'Escape') { State.popup = null; return; }
+    
+    // List nav
+    if (this.list) {
+      if (e.key === 'ArrowDown') { this.sel = Math.min(this.sel+1, this.list.length-1); this.render(); }
+      if (e.key === 'ArrowUp') { this.sel = Math.max(this.sel-1, 0); this.render(); }
+      if (e.key === 'Enter') this.select(this.sel);
+    }
+    
+    // Message Detail Actions
+    if (State.popup.type === 'msg_detail') {
+      if (e.key === 'F12') { // Edit
+        State.editingId = State.popup.data.id;
+        comps.form.fill(State.popup.data.data);
+        State.popup = null;
+      }
+      if (e.key === 'F4' && e.shiftKey) { // Duplicate
+        comps.form.fill(State.popup.data.data);
+        State.popup = null;
+      }
+    }
+  }
+}
+
+// --- 4. APP WIRING ---
+const comps = {
+  script: new Script('script'),
+  form: new Form('form'),
+  oncall: new Oncall('oncall'),
+  info: new Info('info'),
+  popup: new Popup('overlay')
+};
+
+const actions = {
+  loadAccount(id) {
+    const acct = DB.accounts[id];
+    if (acct) {
+      State.account = acct;
+      State.popup = null;
+      State.form = { step: 0, field: 0 };
+    } else {
+      alert('Account not found');
+    }
+  },
+  pmd() { State.popup = null; alert('PMD SENT'); },
+  dial(num) { State.popup = { type: 'dial', data: num }; }
+};
+
+// Wiring State to Components
+EventBus.addEventListener('state:account', (e) => {
+  const s = e.detail;
+  document.getElementById('acct-name').innerText = s.name;
+  document.getElementById('acct-id-disp').innerText = `ID: ${s.id}`;
+  document.getElementById('acct-name').style.color = 'red';
+  document.getElementById('disclaimer').innerText = s.disclaimer || '';
+  document.getElementById('main').classList.remove('dim');
+  
+  comps.script.configure(s.script);
+  comps.form.configure(s.form);
+  comps.oncall.configure(s.oncalls);
+  comps.info.configure(s.info);
+});
+
+EventBus.addEventListener('state:popup', () => comps.popup.render());
+EventBus.addEventListener('state:mode', (e) => {
+  const dbar = document.getElementById('dbar');
+  const dbarIn = document.getElementById('dbar-in');
+  if (e.detail === 'INPUT') {
+    dbar.classList.add('input-mode');
+    document.getElementById('main').classList.add('dim');
+    dbarIn.value = '';
+    dbarIn.focus();
+  } else {
+    dbar.classList.remove('input-mode');
+    document.getElementById('main').classList.remove('dim');
+    if (State.account) document.getElementById('main').classList.remove('dim');
+  }
+});
+
+// Sidebar Generator
+const sb = document.getElementById('sidebar');
+const btns = ['Sys', 'Queue', 'Accts', 'Dial', 'Hold', 'Xfer', 'Conf', 'Park', 'Mute', 'Rel', 'Log', 'Spv', 'Help', 'Brws', 'Mail', 'Chat', 'Calc', 'Note', 'Cal', 'Map', 'Weath', 'PAGE'];
+btns.forEach((b, i) => {
+  const btn = document.createElement('div');
+  btn.className = `btn ${['Hold','Conf'].includes(b)?'yel':['Park','Xfer'].includes(b)?'pnk':b==='PAGE'?'blk':''}`;
+  btn.innerText = b;
+  if (b === 'Accts') btn.onclick = () => State.popup = { type: 'accounts' };
+  else if (b === 'PAGE') btn.onclick = () => alert('PAGING...');
+  else btn.onclick = () => {}; // Dummy
+  sb.appendChild(btn);
+});
+
+// Clock
+setInterval(() => {
+  document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-US', {hour12:false});
+}, 1000);
+
+// Global Input Controller
+document.addEventListener('keydown', (e) => {
+  // Mode Switching
+  if (e.key === '+' || e.key === '=') { 
+    e.preventDefault(); State.mode = 'INPUT'; return; 
+  }
+  if (State.mode === 'INPUT') {
+    if (e.key === 'Escape' || e.key === '`') { State.mode = 'IDLE'; return; }
+    if (e.key === 'Enter') {
+      const val = document.getElementById('dbar-in').value;
+      actions.loadAccount(val);
+      State.mode = 'IDLE';
+    }
+    return; // Block other keys in input mode
+  }
+
+  // Global Hotkeys
+  if (e.key === 'F2') { 
+    e.preventDefault(); 
+    if(State.account) State.popup = { type: 'messages', data: DB.getMsgs(State.account.id) };
+    return;
+  }
+  if (e.key === 'Escape') { State.popup = null; return; }
+
+  // Component Delegation
+  if (State.popup) { comps.popup.handleKey(e); return; }
+  if (State.account) {
+    // Determine active focus based on click (simple heuristic: click sets focus class?)
+    // For this retro app, we assume keyboard priority based on key type
+    if (e.key === 'Tab' || (e.key === 'Enter' && e.shiftKey)) { comps.form.handleKey(e); return; }
+    if (e.key.startsWith('Page')) { comps.info.handleKey(e); return; }
+    
+    // Ambiguous keys (Arrows, Enter) - Logic: If form has focus (clicked), form wins. Else Oncall.
+    // Defaulting to Form for Arrows if dropdown open, else Oncall.
+    // Simplifying for UX: Form gets Tab. Oncall gets Arrows. 
+    // BUT Dropdowns need arrows.
+    
+    // Check if a dropdown is open
+    const openDD = document.querySelector('.dd-list[style*="block"]');
+    if (openDD) { comps.form.handleKey(e); return; }
+
+    if (['ArrowUp', 'ArrowDown'].includes(e.key)) comps.oncall.handleKey(e);
+    if (e.key === 'Enter') comps.oncall.handleKey(e); // Opens popup
+  }
+});
+
+// Initialize
+document.getElementById('main').classList.add('dim'); // Start dimmed
+</script>
 </body>
 </html>
