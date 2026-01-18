@@ -260,33 +260,28 @@ const DB = {
         'PAGE 4: SHORTCUTS\n══════════════════\n\n+ : Quick account search\nF2 : Message history\nF12 : Edit current message\nShift+F4 : Duplicate message\nTab : Next field\nShift+Enter : Submit form\nEsc : Close/Cancel'
       ]
     },
-    '3000': {
-      id: '3000', name: 'Pizza Palace Hotline',
-      answerPhrase: 'TYFC Pizza Palace, will this be pickup or delivery?',
+    '0547': {
+      id: '0547', name: 'Canada Dry Bottling Company',
+      answerPhrase: 'Thank you for calling Canada Dry Bottling Company, how may I help you?',
       script: [
-        { text: '🍕 PIZZA PALACE - ORDER LINE 🍕', style: 'normal' },
-        { text: '\n✓ Upsell breadsticks on every order', style: 'good' },
-        { text: '⚠ 45-minute delivery guarantee', style: 'warn' }
+        { text: 'Call handling instructions', style: 'good' },
+        { text: 'Take message. Staff will return the call once available.', style: 'normal' }
       ],
-      disclaimer: 'Food allergy notice: Ask about allergies before confirming order.',
+      disclaimer: 'Call handling instructions: Take message. Staff will return the call once available.',
       form: {
-        hint: 'Enter order details',
-        steps: [
-          [{ id: 'size', type: 'dropdown', label: 'Pizza Size', opts: ['Small 10"', 'Medium 14"', 'Large 18"', 'Party 24"'] }, { id: 'crust', type: 'dropdown', label: 'Crust Type', opts: ['Thin', 'Regular', 'Deep Dish', 'Stuffed'] }],
-          [{ id: 'top', type: 'text', label: 'Toppings' }, { id: 'addr', type: 'textarea', label: 'Delivery Address' }]
-        ]
+        hint: 'Enter message details',
+        steps: [[
+          { id: 'for_field', type: 'text', label: 'For' },
+          { id: 'name', type: 'text', label: 'Name' },
+          { id: 'phone', type: 'phone', label: 'Phone' },
+          { id: 'co_store', type: 'text', label: 'Co/Store' },
+          { id: 'acct_order', type: 'text', label: 'Acct/Order' },
+          { id: 'address', type: 'textarea', label: 'Address' },
+          { id: 'message', type: 'textarea', label: 'Message' }
+        ]]
       },
-      oncalls: [{ id: 'p1', label: 'Store Manager', name: 'Tony Pepperoni', times: '10AM-10PM', dial: '555-7777', note: 'Complaints and refunds' }],
-      info: ['Menu prices:\nSmall $9.99\nMedium $13.99\nLarge $17.99\nParty $24.99', 'Toppings: $1.50 each\nPepperoni, Sausage, Mushroom\nOnion, Peppers, Olives']
-    },
-    '5500': {
-      id: '5500', name: 'Emergency Services Dispatch',
-      answerPhrase: '911 Emergency Services, what is your emergency?',
-      script: [{ text: '🚨 EMERGENCY DISPATCH CENTER 🚨', style: 'warn' }, { text: '\n⚠ VERIFY LOCATION IMMEDIATELY', style: 'warn' }, { text: '⚠ KEEP CALLER ON LINE', style: 'warn' }],
-      disclaimer: 'CRITICAL: All calls recorded. Follow emergency protocols exactly.',
-      form: { hint: 'Priority intake form', steps: [[{ id: 'loc', type: 'text', label: 'Location/Address', req: true }, { id: 'type', type: 'dropdown', label: 'Emergency Type', opts: ['Medical', 'Fire', 'Police', 'Other'] }], [{ id: 'desc', type: 'textarea', label: 'Situation Description', req: true }]] },
-      oncalls: [{ id: 'e1', label: 'Dispatch Supervisor', name: 'Chief Williams', times: '24/7', dial: '911-0001', note: 'All critical incidents' }],
-      info: ['PROTOCOLS:\n\n1. Stay calm\n2. Get location first\n3. Determine emergency type\n4. Dispatch appropriate unit\n5. Stay on line until help arrives']
+      oncalls: [],
+      info: ['INSTRUCTIONS:\n\nTake message. Staff will return the call once available.']
     }
   },
   msgs(id) { return JSON.parse(localStorage.getItem(`msgs_${id}`) || '[]'); },
